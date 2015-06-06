@@ -22,6 +22,7 @@ int parse_config(char *cfg_name, IRCUser *usr, IRCInfo *inf)
     /* Used variables */
     FILE *file;
     char *line = NULL;
+    char value[16];
     size_t len = 0;
     ssize_t read;
     int ret = 0;
@@ -36,27 +37,27 @@ int parse_config(char *cfg_name, IRCUser *usr, IRCInfo *inf)
         /* Find values in file */
         if(strstr(line, "USERNAME") != NULL) 
         {
-            /* Get username level */
-            usr->name = strdup(line+8);
-            ret++;
+            /* Get username */
+            if (sscanf(line, "%s %s", value, usr->name) == 2) 
+                ret++;
         }
         else if(strstr(line, "NICKNAME") != NULL) 
         {
-            /* Get nickname level */
-            usr->nick = strdup(line+8);
-            ret++;
+            /* Get nickname */
+            if (sscanf(line, "%s %s", value, usr->nick) == 2) 
+                ret++;
         }
         else if(strstr(line, "SERVER") != NULL) 
         {
-            /* Get server level */
-            inf->server = strdup(line+6);
-            ret++;
+            /* Get server */
+            if (sscanf(line, "%s %s", value, inf->server) == 2) 
+                ret++;
         }
         else if(strstr(line, "CHANNEL") != NULL) 
         {
-            /* Get channel level */
-            inf->channel = strdup(line+7);
-            ret++;
+            /* Get channel */
+            if (sscanf(line, "%s %s", value, inf->channel) == 2) 
+                ret++;
         }
     } 
 

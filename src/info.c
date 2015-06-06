@@ -61,11 +61,11 @@ void greet(char *p_name)
  */
 void usage(void) 
 {
-    printf("Usage: derp [-u <user>] [-n <nick>] [-s <server>] [-c <channel>] [-h]\n");
+    printf("\nUsage: derp [-u <user>] [-n <nick>] [-s <server>] [-c <room>] [-h]\n");
     printf("options are:\n");
     printf(" -u         # Username for IRC\n");
     printf(" -n         # Nickname for IRC\n");
     printf(" -s         # Server address for IRC\n");
-    printf(" -c         # Channel for IRC\n");
+    printf(" -c         # Channel room for IRC\n");
     printf("\n");
 }

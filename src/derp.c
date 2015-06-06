@@ -57,21 +57,21 @@ static int parse_arguments(int argc, char *argv[], IRCUser *usr, IRCInfo *inf)
     while ( (c = getopt(argc, argv, "u:n:s:c:h1")) != -1) {
         switch (c) {
         case 'u':
-            usr->name = strdup(optarg);
+            strcpy(usr->name, optarg);
             break;
         case 'n':
-            usr->nick = strdup(optarg);
+            strcpy(usr->nick, optarg);
             break;
         case 's':
-            inf->server = strdup(optarg);
+            strcpy(inf->server, optarg);
             break;
         case 'c':
-            inf->channel = strdup(optarg);
+            strcpy(inf->channel, optarg);
             break;
         case 'h':
         default:
             usage();
-            return -1;
+            exit(-1);
         }
     }
 
@@ -105,15 +105,15 @@ int main(int argc, char *argv[])
     if (!parse_config(CONFIG_FILE, &usr, &inf)) 
     {
         slog(0, SLOG_ERROR, "Can not parse config file: %s", CONFIG_FILE);
+        slog(0, SLOG_ERROR, "Missing or invalid config file.");
         exit(-1);
     }
-    else slog(0, SLOG_INFO, "Config Loaded from: %s", CONFIG_FILE);
-
-    /* Print irc info */
-    print_irc_info(&usr, &inf);
 
     /* Parse cli arguments */
     parse_arguments(argc, argv, &usr, &inf);
+
+    /* Print irc info */
+    print_irc_info(&usr, &inf);
 
     /* Some debug line */
     slog(0, SLOG_DEBUG, "We run!");
