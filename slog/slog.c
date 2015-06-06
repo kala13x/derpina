@@ -200,8 +200,10 @@ int parse_slog_config(char *cfg_name)
         }
     } 
 
-    /* Close file and return */
+    /* Cleanup */
+    if (line) free(line);
     fclose(file);
+
     return ret;
 }
 

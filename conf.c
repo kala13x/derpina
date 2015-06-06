@@ -63,7 +63,9 @@ int parse_config(char *cfg_name, IRCUser *usr, IRCInfo *inf)
     /* Check everything is ok */
     if (ret != 4) ret = 0;
 
-    /* Close file and return */
+    /* Cleanup */
+    if (line) free(line);
     fclose(file);
+
     return ret;
 }
