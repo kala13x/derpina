@@ -9,10 +9,13 @@
 
 #include "stdinc.h"
 #include "slog/slog.h"
+#include "conf.h"
 #include "info.h"
 #include "irc.h"
 
 #define MAXMSG 4098
+#define CONFIG_FILE "conf.cfg"
+
 
 /* 
  * clean_prog - Cleanup on exit. Function handles exit signal
@@ -29,6 +32,19 @@ void clean_prog(int sig)
     exit(-1);
 }
 
+/*
+ * print_irc_info - Print basic irc information such as username, 
+ * nickname, server and channel. Argument usr is pointer of IRCUser 
+ * structure and inf is pointer of IRCInfo structure.
+ */
+void print_irc_info(IRCUser *usr, IRCInfo *inf) 
+{
+    slog(0, SLOG_INFO, "Username: %s", usr->name);
+    slog(0, SLOG_INFO, "Nickname: %s", usr->nick);
+    slog(0, SLOG_INFO, "Server: %s", inf->server);
+    slog(0, SLOG_INFO, "Channel: %s", inf->channel);
+}
+
 
 /* 
  * main - Main function initializes everything ans starts irc 
@@ -36,6 +52,10 @@ void clean_prog(int sig)
  */
 int main ()
 {
+    /* Irc info */
+    IRCUser usr;
+    IRCInfo inf;
+
     /* Greet users */
     greet("IRC Bot Derpina");
     slog(0, SLOG_INFO, "Logger Version: %s", slog_version(1));
@@ -47,6 +67,19 @@ int main ()
 
     /* Initialize logger */
     init_slog("derpina", "conf.cfg", 2);
+
+    /* Initialize irc config */
+    if (!parse_config(CONFIG_FILE, &usr, &inf)) 
+    {
+        slog(0, SLOG_ERROR, "Can not parse config file: %s", CONFIG_FILE);
+        exit(-1);
+    }
+    else slog(0, SLOG_INFO, "Config Loaded from: %s", CONFIG_FILE);
+
+    /* Print irc info */
+    print_irc_info(&usr, &inf);
+
+    /* Some debug line */
     slog(0, SLOG_DEBUG, "We run!");
 
     return 0;

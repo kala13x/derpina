@@ -8,4 +8,35 @@
  */
 
 
- // TODO Here
+/* For include header in CPP code */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/* User information */
+typedef struct {
+    char *name;
+    char *nick;
+} IRCUser;
+
+
+/* Server information */
+typedef struct {
+    char *channel;
+    char *server;
+} IRCInfo;
+
+
+/* 
+ * parse_config - Parse IRC Bot configuration file and store parsed data 
+ * in structure variables. Argument cfg_name is config file path, usr is 
+ * pointer of IRCUser structure and inf is pointer of IRCInfo structure.
+ */
+int parse_config(char *cfg_name, IRCUser *usr, IRCInfo *inf);
+
+
+/* For include header in CPP code */
+#ifdef __cplusplus
+}
+#endif

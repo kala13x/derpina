@@ -165,11 +165,11 @@ void log_to_file(char *out, char *fname, SystemDate *mdate)
 
 
 /*
- * parse_config - Parse config file. Argument cfg_name is path 
- * of config file name to be parsed. Function opens config file 
- * and parses LOGLEVEL and LOGTOFILE flags from it.
+ * parse_slog_config - Parse config file. Argument cfg_name is 
+ * path of config file name to be parsed. Function opens config 
+ * file and parses LOGLEVEL and LOGTOFILE flags from it.
  */
-int parse_config(char *cfg_name)
+int parse_slog_config(char *cfg_name)
 {
     /* Used variables */
     FILE *file;
@@ -313,7 +313,7 @@ void init_slog(char* fname, char* conf, int lvl)
     slg.to_file = 0;
 
     /* Parse config file */
-    if (parse_config(conf)) 
+    if (parse_slog_config(conf)) 
     {
         slog(0, SLOG_WARN, "LOGLEVEL and/or LOGTOFILE flag is not set from config.");
 
