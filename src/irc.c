@@ -248,27 +248,27 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
  
     while (1)
     {
-        if (!joined) 
-        {
-            /* Move on */
-            count++;
-     
-            switch (count) {
-                case 3:
-                    /* After 3 recives send data to server */
-                    send_data(sock, usr->nick);
-                    send_data(sock, usr->name);
-                    break;
-                case 4:
-                    /* Join in channel */
-                    bzero(cmd, sizeof(cmd));
-                    sprintf(cmd, "JOIN #%s\r\n", inf->channel);
+        /* Move on */
+        count++;
 
-                    send_data(sock, cmd);
-                    joined = 1;
-                default:
-                    break;
-            }
+        switch (count) {
+            case 3:
+                /* After 3 recives send data to server */
+                send_data(sock, usr->nick);
+                send_data(sock, usr->name);
+                break;
+
+            case 4:
+                /* Join in channel */
+                bzero(cmd, sizeof(cmd));
+                sprintf(cmd, "JOIN #%s\r\n", inf->channel);
+
+                send_data(sock, cmd);
+                joined = 1;
+                break;
+                
+            default:
+                break;
         }
  
         /* Recieve data from socket */
