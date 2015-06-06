@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     print_irc_info(&usr, &inf);
 
     /* Authorize user */
-    sock = authorise_user(&usr, &inf);
+    sock = authorize_user(&usr, &inf);
     if (sock < 0) 
     {
         slog(0, SLOG_ERROR, "Disconnected from server: %s", inf.server);
@@ -198,9 +198,6 @@ int main(int argc, char *argv[])
         /* Recieve data from socket */
         bytes = recv(sock, buf, MAXMSG-1, 0);
         buf[bytes] = '\0';
-
-        /* Print recieved buffer */
-        if (strlen(buf) > 0) slog(0, SLOG_LIVE, "Recieved from IRC: %s", buf);
  
         /* Check if ping request and send pong */
         if (search_str(buf, "PING")) send_keepalive(sock, buf);

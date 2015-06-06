@@ -217,15 +217,27 @@ void send_keepalive(int sock, char *buf)
 
 
 /* 
- * authorise_user - Get authorisatin to the irc server, join to 
+ * is_connected - Check if we are connected to the server.
+ * Function searchs MOTD in recieved buffer and returns 1
+ * if found, otherwise return value is 0. buf is a buffer.
+ */
+int is_connected(char *buf) 
+{
+    if (search_str(buf, "/MOTD"))
+        return 1;
+    else
+        return 0;
+}
+
+
+/* 
+ * authorize_user - Get authorizatin to the irc server, join to 
  * channel and anser ping requests. Argument usr is pointer of 
  * IRCUser structure and inf is pointer of IRCInfo structure.
  */
-int authorise_user(IRCUser *usr, IRCInfo *inf) 
+int authorize_user(IRCUser *usr, IRCInfo *inf) 
 {
     int sock, bytes;
-    int count = 0;
-    int joined = 0;
     char buf[MAXMSG];
     char cmd[128];
 
@@ -249,42 +261,34 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
     /* Clear command */
     bzero(cmd, sizeof(cmd));
 
+    /* Send nick to the server */
+    sprintf(cmd, "NICK %s\r\n", usr->nick);
+    send_data(sock, cmd);
+
+    /* Send user to the server */
+    sprintf(cmd, "USER %s 0 0 :%s\r\n", usr->name, usr->nick);
+    send_data(sock, cmd);
+
     while (1)
     {
-        /* Move on */
-        count++;
-
-        switch (count) {
-            case 3:
-                /* After 3 recives send data to server */
-                sprintf(cmd, "NICK %s\r\n", usr->nick);
-                send_data(sock, usr->nick);
-
-                sprintf(cmd, "USER %s\r\n", usr->name);
-                send_data(sock, usr->name);
-                break;
-            case 4:
-                /* Join in channel */
-                sprintf(cmd, "JOIN #%s\r\n", inf->channel);
-                send_data(sock, cmd);
-
-                joined = 1;
-                break;
-            default:
-                break;
-        }
- 
         /* Recieve data from socket */
         bytes = recv(sock, buf, MAXMSG-1, 0);
         buf[bytes] = '\0';
 
-        /* Print recieved buffer */
-        if (strlen(buf) > 0) slog(0, SLOG_LIVE, "Recieved from IRC: %s", buf);
+        /* Check if connected */
+        if (is_connected(buf)) 
+        {
+            /* Join in channel */
+            sprintf(cmd, "JOIN #%s\r\n", inf->channel);
+            send_data(sock, cmd);
+            return sock;
+        }
  
         /* Check if ping request and send pong */
         if (search_str(buf, "PING")) send_keepalive(sock, buf);
 
-        /* Check if joined to channel */
-        if (joined) return sock;
+        /* Join in channel */
+        sprintf(cmd, "JOIN #%s\r\n", inf->channel);
+        send_data(sock, cmd);
     }
 }

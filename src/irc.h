@@ -55,11 +55,19 @@ void send_keepalive(int sock, char *buf);
 
 
 /* 
- * authorise_user - Get authorisatin to the irc server, join to 
+ * is_connected - Check if we are connected to the server.
+ * Function searchs MOTD in recieved buffer and returns 1
+ * if found, otherwise return value is 0. buf is a buffer.
+ */
+int is_connected(char *buf);
+
+
+/* 
+ * authorize_user - Get authorizatin to the irc server, join to 
  * channel and anser ping requests. Argument usr is pointer of 
  * IRCUser structure and inf is pointer of IRCInfo structure.
  */
-int authorise_user(IRCUser *usr, IRCInfo *inf);
+int authorize_user(IRCUser *usr, IRCInfo *inf);
 
 
 /* For include header in CPP code */
