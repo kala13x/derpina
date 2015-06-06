@@ -23,11 +23,18 @@ int search_str(char *str, char *srch);
 
 
 /* 
- * get_answer - Handle messages from recieved buffer and make correct 
- * response. buf is recieved buffer Return value is char pointer.
- * P.S. Add your message gandling and question answer protocol here.
+ * watch_private_chat - Handle messages from recieved buffer and make 
+ * correct response. buf is recieved buffer Return value is char pointer.
+ * P.S. Add your message handling and question answer protocol here.
  */
-char* get_answer(char *buf);
+char* watch_private_chat(char *buf);
+
+/* 
+ * watch_whole_chat - Handle messages in public from recieved buffer 
+ * and make correct response. buf is recieved buffer Return value is 
+ * char pointer. P.S. Add your questions and answers protocol here.
+ */
+char* watch_whole_chat(char *buf);
 
 
 /* For include header in CPP code */

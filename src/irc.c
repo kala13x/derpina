@@ -184,14 +184,17 @@ void send_keepalive(int sock, char *buf)
  */
 void handle_msg(int sock, char *buf, char *usr, char *chan) 
 {
+    char *answer;
+
     /* Check if they are talking to us */
     if(search_str(buf, usr) > 0) 
-    {
-        /* Send answer */
-        char *answer = get_answer(buf);
-        if (answer != NULL) 
+        answer = watch_private_chat(buf);
+    else 
+        answer = watch_whole_chat(buf);
+
+    /* Make answer */
+    if (answer != NULL) 
             send_message(sock, chan, answer);
-    }
 
     /* Check if ping request and send pong */
     if (search_str(buf, "PING") > 0) 
