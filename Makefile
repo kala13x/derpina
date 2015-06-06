@@ -1,6 +1,6 @@
-CFLAGS = -g -O2 -Wall -Iutils
-LIB = utils/utils.a
-OBJ = derp.o
+CFLAGS = -g -O2 -Wall -Islog
+LIB = slog/slog.a
+OBJ = derp.o irc.o info.o
 INSTALL = bin
 
 all: $(OBJ)
@@ -10,7 +10,9 @@ all: $(OBJ)
 	@install -m 0755 derp $(INSTALL)/
 	@echo [-] Executable files builded in - $(INSTALL) folder
 
-derp.o: stdinc.h
+derp.o: irc.o info.o stdinc.h
+info.o: info.h stdinc.h
+irc.o: irc.h stdinc.h
 
 .PHONY: clean
 

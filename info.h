@@ -1,15 +1,15 @@
 /*
- *  utils/info.h
+ *  derpina/info.c
  *
- *  Copyleft (C) 2015  Sun Dro (a.k.a. kala13x)
+ *  Copyleft (C) 2015  Sun Dro
  *
  * Get additional information about library
  */
 
 
-#define VERSION_MAX     1
-#define VERSION_MIN     6
-#define BUILD_NUMBER    85
+#define VERSION_MAX     0
+#define VERSION_MIN     1
+#define BUILD_NUMBER    3
 
 
 /* For include header in CPP code */
@@ -19,19 +19,19 @@ extern "C" {
 
 
 /* 
- * utils_version - Get library version. Function returns 
+ * derp_version - Get program version. Function returns 
  * version, build number and build date of application. 
  * Return value is char pointer.
  */
-const char* utils_version();
+const char* derp_version();
 
 
 /* 
- * utils_version_short - Get library version. Function returns only
+ * derp_version_short - Get program version. Function returns only
  * version, build number of application without additional strings. 
  * Return value is char pointer. For example: 1.0.32
  */
-const char* utils_version_short();
+const char* derp_version_short();
 
 
 /* 
@@ -40,13 +40,6 @@ const char* utils_version_short();
  * p_name is program name from which we want to greet users. 
  */
 void greet(char *p_name);
-
-
-/*
- * print_system_info - Get and print operating system information
- * such as system name, release, version, hardware identifier and etc.
- */
- void print_system_info();
 
 
 /* For include header in CPP code */

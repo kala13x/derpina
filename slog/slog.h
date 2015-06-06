@@ -1,9 +1,18 @@
 /*
- *  utils/slog.h
+ *  slog is Advanced logging library for C/C++
  *
- *  Copyleft (C) 2015  Sun Dro (a.k.a. kala13x)
+ *  Copyright (c) 2015 Sun Dro (a.k.a. 7th Ghost)
+ *  Web: http://off-sec.com/ ; E-Mail: kala0x13@gmail.com
  *
- * slog is advanced logging library
+ * This is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  */
 
 
@@ -15,8 +24,9 @@ extern "C" {
 
 /* Definations for version info */
 #define SLOGVERSION_MAX  1
-#define SLOGVERSION_MIN  0
-#define SLOGBUILD_NUM    49
+#define SLOGVERSION_MIN  2
+#define SLOGBUILD_NUM    61
+
 
 /* Loging flags */
 #define SLOG_LIVE   1
@@ -25,6 +35,18 @@ extern "C" {
 #define SLOG_DEBUG  4
 #define SLOG_ERROR  5
 #define SLOG_NONE   6
+
+
+/* Date variables */
+typedef struct {
+    int year; 
+    int mon; 
+    int day;
+    int hour;
+    int min;
+    int sec;
+} SystemDate;
+
 
 /* Flags */
 typedef struct {
@@ -37,9 +59,9 @@ typedef struct {
 /* 
  * Get library version. Function returns version and build number of slog 
  * library. Return value is char pointer. Argument min is flag for output 
- * format. If min is 1, function returns version in full  format, if flag 
- * is 0 function returns only version numbers, For examle: 1.0.52.
--*/
+ * format. If min is 0, function returns version in full  format, if flag 
+ * is 1 function returns only version number, For examle: 1.3.0
+ */
 const char* slog_version(int min);
 
 
@@ -47,13 +69,13 @@ const char* slog_version(int min);
  * Initialize slog library. Function parses config file and reads log 
  * level and save to file flag from config. First argument is file name 
  * where log will be saved and second argument conf is config file path 
- * to be parsedand third argument lvl is log level for this message.
+ * to be parsed and third argument lvl is log level for this message.
  */
 void init_slog(char* fname, char *conf, int lvl);
 
 
 /*
- * Retunr string in slog format. Function takes arguments 
+ * Return string in slog format. Function takes arguments 
  * and returns string in slog format without printing and 
  * saveing in file. Return value is char pointer.
  */

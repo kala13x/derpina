@@ -1,31 +1,73 @@
 /*
- *  utils/slog.c
+ *  slog is Advanced logging library for C/C++
  *
- *  Copyleft (C) 2015  Sun Dro (a.k.a. kala13x)
+ *  Copyright (c) 2015 Sun Dro (a.k.a. 7th Ghost)
+ *  Web: http://off-sec.com/ ; E-Mail: kala0x13@gmail.com
  *
- * slog is advanced logging library
+ * This is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  */
 
 
-#include "stdinc.h"
-#include "systime.h"
-#include "files.h"
-#include "color.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <time.h>
 #include "slog.h"
 
-/* Max buffer size of message */
+/* Supported colors */
+#define CLR_NORM     "\x1B[0m"
+#define CLR_RED      "\x1B[31m"
+#define CLR_GREEN    "\x1B[32m"
+#define CLR_YELLOW   "\x1B[33m"
+#define CLR_BLUE     "\x1B[34m"
+#define CLR_NAGENTA  "\x1B[35m"
+#define CLR_CYAN     "\x1B[36m"
+#define CLR_WHITE    "\x1B[37m"
+#define CLR_RESET    "\033[0m"
+
+/* Max size of string */
 #define MAXMSG 8196
 
 /* Flags */
 static slog_flags slg;
 
 
+/*
+ * get_system_date - Intialize date with system date.
+ * Argument is pointer of SystemDate structure.
+ */
+void get_system_date(SystemDate *mdate) 
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+    rawtime = time(NULL);
+    timeinfo = localtime(&rawtime);
+
+    /* Get System Date */
+    mdate->year = timeinfo->tm_year+1900;
+    mdate->mon = timeinfo->tm_mon+1;
+    mdate->day = timeinfo->tm_mday;
+    mdate->hour = timeinfo->tm_hour;
+    mdate->min = timeinfo->tm_min;
+    mdate->sec = timeinfo->tm_sec;
+}
+
+
 /* 
  * Get library version. Function returns version and build number of slog 
  * library. Return value is char pointer. Argument min is flag for output 
- * format. If min is 1, function returns version in full  format, if flag 
- * is 0 function returns only version numbers, For examle: 1.3.0
--*/
+ * format. If min is 0, function returns version in full  format, if flag 
+ * is 1 function returns only version number, For examle: 1.3.0
+ */
 const char* slog_version(int min)
 {
     static char verstr[128];
@@ -43,6 +85,60 @@ const char* slog_version(int min)
 
 
 /*
+ * strclr - Colorize string. Function takes color value and string 
+ * and returns colorized string as char pointer. First argument clr 
+ * is color value (if it is invalid, function retunrs NULL) and second 
+ * is string with va_list of arguments which one we want to colorize.
+ */
+char* strclr(int clr, char* str, ...) 
+{
+    /* String buffers */
+    static char output[MAXMSG];
+    char string[MAXMSG];
+
+    /* Read args */
+    va_list args;
+    va_start(args, str);
+    vsprintf(string, str, args);
+    va_end(args);
+
+    /* Handle colors */
+    switch(clr) 
+    {
+        case 0:
+            sprintf(output, "%s%s%s", CLR_NORM, string, CLR_RESET);
+            break;
+        case 1:
+            sprintf(output, "%s%s%s", CLR_GREEN, string, CLR_RESET);
+            break;
+        case 2:
+            sprintf(output, "%s%s%s", CLR_RED, string, CLR_RESET);
+            break;
+        case 3:
+            sprintf(output, "%s%s%s", CLR_YELLOW, string, CLR_RESET);
+            break;
+        case 4:
+            sprintf(output, "%s%s%s", CLR_BLUE, string, CLR_RESET);
+            break;
+        case 5:
+            sprintf(output, "%s%s%s", CLR_NAGENTA, string, CLR_RESET);
+            break;
+        case 6:
+            sprintf(output, "%s%s%s", CLR_CYAN, string, CLR_RESET);
+            break;
+        case 7:
+            sprintf(output, "%s%s%s", CLR_WHITE, string, CLR_RESET);
+            break;
+        default:
+            return NULL;
+    }
+
+    /* Return output */
+    return output;
+}
+
+
+/*
  * log_to_file - Save log in file. Argument aut is string which
  * we want to log. Argument fname is log file path and mdate is 
  * SystemDate structure variable, we need it to create filename.
@@ -56,8 +152,15 @@ void log_to_file(char *out, char *fname, SystemDate *mdate)
     sprintf(filename, "%s-%02d-%02d-%02d.log", 
         fname, mdate->year, mdate->mon, mdate->day);
 
-    /* Log to file */
-    file_add_line(filename, out);
+    /* Open file pointer */
+    FILE *fp = fopen(filename, "a");
+    if (fp == NULL) return;
+
+    /* Write key in file */
+    fprintf(fp, "%s", out);
+
+    /* Close file pointer */
+    fclose(fp);
 }
 
 
@@ -201,7 +304,7 @@ void slog(int level, int flag, char *msg, ...)
  * Initialize slog library. Function parses config file and reads log 
  * level and save to file flag from config. First argument is file name 
  * where log will be saved and second argument conf is config file path 
- * to be parsedand third argument lvl is log level for this message.
+ * to be parsed and third argument lvl is log level for this message.
  */
 void init_slog(char* fname, char* conf, int lvl) 
 {

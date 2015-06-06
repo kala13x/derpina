@@ -1,7 +1,7 @@
 #!/bin/bash
 # Simple build script to compile project
 
-cd ${PWD##}/utils
+cd ${PWD##}/slog
 make clean
 make
 

@@ -8,14 +8,14 @@
  */
 
 #include "stdinc.h"
-#include "utils/slog.h"
-#include "utils/info.h"
+#include "slog/slog.h"
+#include "info.h"
+#include "irc.h"
 
 int main ()
 {
 	/* Greet users */
     greet("IRC Bot Derpina");
-    slog(0, SLOG_INFO, "Utils Version: %s", utils_version_short());
     slog(0, SLOG_INFO, "Logger Version: %s", slog_version(1));
 
     /* Initialize logger */
