@@ -72,7 +72,7 @@ int send_data(int sock, char *buf)
 int create_socket(char *addr, char *port) 
 {
     struct addrinfo hints, *sinfo;
-    int sock;
+    int sock, ret;
 
     /* Make sure that sinfo is clear */
     memset(&hints, 0, sizeof hints);
@@ -89,22 +89,68 @@ int create_socket(char *addr, char *port)
     }
  
     /* Setup the socket */
-    if ((sock = socket(sinfo->ai_family, sinfo->ai_socktype, sinfo->ai_protocol)) == -1)
+    sock = socket(sinfo->ai_family, sinfo->ai_socktype, sinfo->ai_protocol);
+    if (sock < 0)
     {
         slog(0, SLOG_ERROR, "Can not create socket");
         exit(-1);
     }
  
     /* Connect to the socker */
-    if (connect(sock,sinfo->ai_addr, sinfo->ai_addrlen) == -1)
+    ret = connect(sock, sinfo->ai_addr, sinfo->ai_addrlen);
+    if (ret < 0)
     {
         slog(0, SLOG_ERROR, "Can not connect to socket: %d", sock);
-        close (sock);
+
+        close(sock);
         exit(-1);
     }
  
     /* We dont need this anymore */
     freeaddrinfo(sinfo);
+
+    return sock;
+}
+
+
+/* 
+ * create_client_socket - Function creates and returns connected 
+ * client socket. If argument addr is NULL, socket will be created 
+ * with INADDR_ANY flag. port argument is p for socket creation.
+ */
+int create_client_socket(char *addr, char *p)
+{
+    /* Used variables */
+    int sock, ret;
+    struct sockaddr_in name;
+
+    /* Create the socket. */
+    sock = socket (AF_INET, SOCK_STREAM, 0);
+    if (sock < 0)
+    {
+        slog(2, SLOG_ERROR, "Can not create client socket: %d", sock);
+
+        return sock;
+    }
+
+    /* Give the socket a name. */
+    int16_t port = atoi(p);
+    name.sin_family = AF_INET;
+    name.sin_port = htons (port);
+
+    /* Socket address */
+    if (addr != NULL) name.sin_addr.s_addr = inet_addr(addr);
+    else name.sin_addr.s_addr = htonl (INADDR_ANY);
+
+    /* Connect socket */
+    ret = connect(sock, (struct sockaddr *) &name, sizeof(name));
+    if (ret < 0)
+    {
+        slog(2, SLOG_ERROR, "Can not connect to socket: %d", sock);
+
+        close(sock);
+        return ret;
+    }
 
     return sock;
 }
@@ -124,7 +170,7 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
     char cmd[128];
 
     /* Create socket */
-    sock = create_socket(inf->server, inf->port);
+    sock = create_client_socket(inf->server, inf->port);
     if (sock < 0) return -1;
  
     while (1)
