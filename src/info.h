@@ -9,7 +9,7 @@
 
 #define VERSION_MAX     0
 #define VERSION_MIN     1
-#define BUILD_NUMBER    14
+#define BUILD_NUMBER    15
 
 
 /* For include header in CPP code */
@@ -36,7 +36,7 @@ const char* derp_version_short();
 
 /* 
  * greet - Print greeting message. Function returns program 
- * name, version, build number and build date. Argument 
+ * name, version, build number and build date. Argument
  * p_name is program name from which we want to greet users. 
  */
 void greet(char *p_name);

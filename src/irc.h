@@ -30,6 +30,22 @@ int search_str(char *str, char *srch);
 int send_data(int sock, char *buf);
 
 
+/*
+ * create_socket - Create socket for irc server. Function creates and returns 
+ * connected socket for irc server. If error is occured function returns -1. 
+ * Argument addr is address for socket and port is port for socket creation.
+ */
+int create_socket(char *addr, char *port);
+
+
+/* 
+ * authorise_user - Get authorisatin to the irc server, join to 
+ * channel and anser ping requests. Argument usr is pointer of 
+ * IRCUser structure and inf is pointer of IRCInfo structure.
+ */
+int authorise_user(IRCUser *usr, IRCInfo *inf);
+
+
 /* For include header in CPP code */
 #ifdef __cplusplus
 }

@@ -13,7 +13,6 @@
 #include "info.h"
 #include "irc.h"
 
-#define MAXMSG 4098
 #define CONFIG_FILE "conf.cfg"
 
 
@@ -176,6 +175,10 @@ int main(int argc, char *argv[])
 
     /* Print irc info */
     print_irc_info(&usr, &inf);
+
+    /* Authorize user */
+    int sock = authorise_user(&usr, &inf);
+    if (sock < 0) slog(0, SLOG_ERROR, "Disconnected from server: %s", inf.server);
 
     /* Some debug line */
     slog(0, SLOG_DEBUG, "Here we go!");
