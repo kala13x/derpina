@@ -198,6 +198,8 @@ int main(int argc, char *argv[])
         /* Recieve data from socket */
         bytes = recv(sock, buf, MAXMSG-1, 0);
         buf[bytes] = '\0';
+
+        if (strlen(buf) > 0) printf("%s\n", buf);
  
         /* Check if ping request and send pong */
         if (search_str(buf, "PING")) send_keepalive(sock, buf);

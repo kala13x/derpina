@@ -225,6 +225,8 @@ int is_connected(char *buf)
 {
     if (search_str(buf, "/MOTD"))
         return 1;
+    else if (search_str(buf, "MOTD"))
+        return 1;
     else
         return 0;
 }
