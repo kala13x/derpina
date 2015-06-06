@@ -8,7 +8,7 @@
  */
 
 #include "stdinc.h"
-#include "slog/slog.h"
+#include "../slog/slog.h"
 #include "conf.h"
 #include "info.h"
 #include "irc.h"

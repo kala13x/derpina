@@ -5,8 +5,10 @@ cd ${PWD##}/slog
 make clean
 make
 
-cd ..
+cd ../src
 make clean
 make
+
+cd ..
 
 echo "[-] Build done"
