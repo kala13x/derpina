@@ -42,6 +42,12 @@ const char* derp_version_short();
 void greet(char *p_name);
 
 
+/*
+ * usage - Print help and usage information.
+ */
+void usage(void);
+
+
 /* For include header in CPP code */
 #ifdef __cplusplus
 }

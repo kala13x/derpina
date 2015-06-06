@@ -47,10 +47,43 @@ void print_irc_info(IRCUser *usr, IRCInfo *inf)
 
 
 /* 
+ * parse_arguments - Parse user inputed arguments and store 
+ * data in structure variables. Argument usr is pointer of 
+ * IRCUser structure and inf is pointer of IRCInfo structure.
+ */
+static int parse_arguments(int argc, char *argv[], IRCUser *usr, IRCInfo *inf)
+{
+    int c;
+    while ( (c = getopt(argc, argv, "u:n:s:c:h1")) != -1) {
+        switch (c) {
+        case 'u':
+            usr->name = strdup(optarg);
+            break;
+        case 'n':
+            usr->nick = strdup(optarg);
+            break;
+        case 's':
+            inf->server = strdup(optarg);
+            break;
+        case 'c':
+            inf->channel = strdup(optarg);
+            break;
+        case 'h':
+        default:
+            usage();
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+/* 
  * main - Main function initializes everything ans starts irc 
  * loop which is responsible for keep alive irc connection.
  */
-int main ()
+int main(int argc, char *argv[])
 {
     /* Irc info */
     IRCUser usr;
@@ -78,6 +111,9 @@ int main ()
 
     /* Print irc info */
     print_irc_info(&usr, &inf);
+
+    /* Parse cli arguments */
+    parse_arguments(argc, argv, &usr, &inf);
 
     /* Some debug line */
     slog(0, SLOG_DEBUG, "We run!");
