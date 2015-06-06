@@ -199,7 +199,12 @@ int main(int argc, char *argv[])
         bytes = recv(sock, buf, MAXMSG-1, 0);
         buf[bytes] = '\0';
 
-        if (strlen(buf) > 0) printf("%s\n", buf);
+        /* Log recieved data */
+        if (strlen(buf) > 0) 
+        {
+            sscanf(buf, "%512[^\n]\n", buf);
+            slog(0, SLOG_LIVE, "%s", buf);
+        }
  
         /* Check if ping request and send pong */
         if (search_str(buf, "PING")) send_keepalive(sock, buf);
