@@ -88,5 +88,16 @@ char* get_answer(char *buf)
         return output;
     }
 
+    /* Check if they are talking about sundro */
+    if((search_str(buf, "sandro") > 0)    || 
+        (search_str(buf, "sundro") > 0)   || 
+        (search_str(buf, "sun dro") > 0)  ||
+        (search_str(buf, "Sun Dro") > 0))
+    {
+        /* Send answer */
+        sprintf(output, "%s", "Did you say something about sundro? I got you!");
+        return output;
+    }
+
     return NULL;
 }
