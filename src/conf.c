@@ -25,44 +25,46 @@ int parse_config(char *cfg_name, IRCUser *usr, IRCInfo *inf)
     char value[16];
     size_t len = 0;
     ssize_t read;
-    int ret = 0;
+    int ret = 1;
 
     /* Open file pointer */
     file = fopen(cfg_name, "r");
-    if(file == NULL) return ret;
+    if(file == NULL) return 0;
 
     /* Line-by-line read cfg file */
     while ((read = getline(&line, &len, file)) != -1) 
     {
-        /* Find values in file */
         if(strstr(line, "USERNAME") != NULL) 
         {
             /* Get username */
-            if (sscanf(line, "%s %s", value, usr->name) == 2) 
-                ret++;
-        }
+            if (sscanf(line, "%s %s", value, usr->name) != 2) 
+                ret = 0;
+        }        
         else if(strstr(line, "NICKNAME") != NULL) 
         {
             /* Get nickname */
-            if (sscanf(line, "%s %s", value, usr->nick) == 2) 
-                ret++;
+            if (sscanf(line, "%s %s", value, usr->nick) != 2) 
+                ret = 0;
         }
-        else if(strstr(line, "SERVER") != NULL) 
+        else if(strstr(line, "SERVER") != NULL)
         {
             /* Get server */
-            if (sscanf(line, "%s %s", value, inf->server) == 2) 
-                ret++;
+            if (sscanf(line, "%s %s", value, inf->server) != 2) 
+                ret = 0;
+        }
+        else if(strstr(line, "PORT") != NULL) 
+        {
+            /* Get port */
+            if (sscanf(line, "%s %s", value, inf->port) != 2) 
+                ret = 0;
         }
         else if(strstr(line, "CHANNEL") != NULL) 
         {
             /* Get channel */
-            if (sscanf(line, "%s %s", value, inf->channel) == 2) 
-                ret++;
+            if (sscanf(line, "%s %s", value, inf->channel) != 2) 
+                ret = 0;
         }
-    } 
-
-    /* Check everything is ok */
-    if (ret != 4) ret = 0;
+    }
 
     /* Cleanup */
     if (line) free(line);

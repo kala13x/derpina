@@ -49,11 +49,10 @@ const char* derp_version_short()
  */
 void greet(char *p_name)
 {
-    printf("============================================================\n");
+    printf("====================================================\n");
     printf("%s Version: %s\n", p_name, derp_version());
-    printf("============================================================\n");
+    printf("====================================================\n");
 }
-
 
 
 /*
@@ -61,11 +60,12 @@ void greet(char *p_name)
  */
 void usage(void) 
 {
-    printf("\nUsage: derp [-u <user>] [-n <nick>] [-s <server>] [-c <room>] [-h]\n");
+    printf("\nUsage: derp [-u <user>] [-n <nick>] [-s <server>] [-p <port>] [-c <room>] [-h]\n");
     printf("options are:\n");
     printf(" -u         # Username for IRC\n");
     printf(" -n         # Nickname for IRC\n");
     printf(" -s         # Server address for IRC\n");
+    printf(" -p         # Port for IRC\n");
     printf(" -c         # Channel room for IRC\n");
     printf("\n");
 }

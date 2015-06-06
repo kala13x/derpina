@@ -14,17 +14,18 @@ extern "C" {
 #endif
 
 
-/* User information */
+/* User infrmation */
 typedef struct {
     char name[16];
     char nick[16];
 } IRCUser;
 
 
-/* Server information */
+/* Server Information */
 typedef struct {
     char channel[16];
     char server[16];
+    char port[6];
 } IRCInfo;
 
 

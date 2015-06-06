@@ -32,6 +32,21 @@ void clean_prog(int sig)
     exit(-1);
 }
 
+
+/*
+ * init_irc_info - Initialise irc connect information. Argument usr is 
+ * pointer of IRCUser structure and inf is pointer of IRCInfo structure.
+ */
+void init_irc_info(IRCUser *usr, IRCInfo *inf) 
+{
+    bzero(usr->name, sizeof(usr->name));
+    bzero(usr->nick, sizeof(usr->nick));
+    bzero(inf->port, sizeof(inf->port));
+    bzero(inf->server, sizeof(inf->server));
+    bzero(inf->channel, sizeof(inf->channel));
+}
+
+
 /*
  * print_irc_info - Print basic irc information such as username, 
  * nickname, server and channel. Argument usr is pointer of IRCUser 
@@ -42,7 +57,47 @@ void print_irc_info(IRCUser *usr, IRCInfo *inf)
     slog(0, SLOG_INFO, "Username: %s", usr->name);
     slog(0, SLOG_INFO, "Nickname: %s", usr->nick);
     slog(0, SLOG_INFO, "Server: %s", inf->server);
+    slog(0, SLOG_INFO, "Port: %s", inf->port);
     slog(0, SLOG_INFO, "Channel: %s", inf->channel);
+}
+
+
+/* 
+ * fix_missing_input - Fix missing values from config file
+ * or arguments inputed by user. Argument usr is pointer of 
+ * IRCUser structure and inf is pointer of IRCInfo structure.
+ */
+void fix_missing_input(IRCUser *usr, IRCInfo *inf)
+{
+    if(strlen(usr->name) < 4) 
+    {
+        printf("%s", ret_slog("[INPUT] Username: "));
+        scanf("%s", usr->name);
+    }
+
+    if(strlen(usr->nick) < 4) 
+    {
+        printf("%s", ret_slog("[INPUT] Nickname: "));
+        scanf("%s", usr->nick);
+    }
+
+    if(strlen(inf->server) < 4) 
+    {
+        printf("%s", ret_slog("[INPUT] Server: "));
+        scanf("%s", inf->server);
+    }
+
+    if(strlen(inf->port) < 4) 
+    {
+        printf("%s", ret_slog("[INPUT] Port: "));
+        scanf("%s", inf->port);
+    }
+
+    if(strlen(inf->channel) < 4) 
+    {
+        printf("%s", ret_slog("[INPUT] Channel: "));
+        scanf("%s", inf->channel);
+    }
 }
 
 
@@ -64,6 +119,9 @@ static int parse_arguments(int argc, char *argv[], IRCUser *usr, IRCInfo *inf)
             break;
         case 's':
             strcpy(inf->server, optarg);
+            break;
+        case 'p':
+            strcpy(inf->port, optarg);
             break;
         case 'c':
             strcpy(inf->channel, optarg);
@@ -98,25 +156,29 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, clean_prog);
     signal(SIGILL , clean_prog);
 
-    /* Initialize logger */
+    /* Initialize logger and irc info */
     init_slog("derpina", "conf.cfg", 2);
+    init_irc_info(&usr, &inf);
 
     /* Initialize irc config */
     if (!parse_config(CONFIG_FILE, &usr, &inf)) 
     {
         slog(0, SLOG_ERROR, "Can not parse config file: %s", CONFIG_FILE);
-        slog(0, SLOG_ERROR, "Missing or invalid config file.");
+        slog(0, SLOG_ERROR, "invalid config file or missing some value");
         exit(-1);
     }
 
     /* Parse cli arguments */
     parse_arguments(argc, argv, &usr, &inf);
 
+    /* Fix missing user input */
+    fix_missing_input(&usr, &inf);
+
     /* Print irc info */
     print_irc_info(&usr, &inf);
 
     /* Some debug line */
-    slog(0, SLOG_DEBUG, "We run!");
+    slog(0, SLOG_DEBUG, "Here we go!");
 
     return 0;
 }
