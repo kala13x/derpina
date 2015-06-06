@@ -56,6 +56,7 @@ int search_str(char *str, char *srch)
 char* get_answer(char *buf) 
 {
     static char output[MAXMSG];
+    bzero(output, sizeof(output));
 
     /* Blah questions */
     if (search_str(buf, "who are you") > 0) 
