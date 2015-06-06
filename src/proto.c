@@ -49,51 +49,6 @@ int search_str(char *str, char *srch)
 
 
 /* 
- * watch_private_chat - Handle messages from recieved buffer and make 
- * correct response. buf is recieved buffer Return value is char pointer.
- * P.S. Add your message handling and question answer protocol here.
- */
-char* watch_private_chat(char *buf)
-{
-    static char output[MAXMSG];
-    bzero(output, sizeof(output));
-
-    /* Blah questions */
-    if (search_str(buf, "who are you") > 0) 
-    {
-        sprintf(output, "%s", "Im Derpina, Bitch!");
-        return output;
-    }
-
-    /* Who questions */
-    if (search_str(buf, "who is") > 0)
-    {
-        sprintf(output, "%s", "I dont fucking know, gtfo bitch!");
-        return output;
-    }
-
-    /* Sey hello */ 
-    if ((search_str(buf, "hey") > 0) || (search_str(buf, "hello") > 0)) 
-    {
-        sprintf(output, "%s", "Heey!");
-        return output;
-    }
-
-    /* More blaah questions */
-    if ((search_str(buf, "whats up") > 0)    ||
-        (search_str(buf, "what's up") > 0)   ||
-        (search_str(buf, "how are you") > 0) ||
-        (search_str(buf, "whats going") > 0) )
-    {
-        sprintf(output, "%s", "Heh, Just chilling. Yay!");
-        return output;
-    }
-
-    return NULL;
-}
-
-
-/* 
  * watch_whole_chat - Handle messages in public from recieved buffer 
  * and make correct response. buf is recieved buffer Return value is 
  * char pointer. P.S. Add your questions and answers protocol here.
@@ -111,6 +66,52 @@ char* watch_whole_chat(char *buf)
     {
         /* Send answer */
         sprintf(output, "%s", "Did you say something about sundro? I got you!");
+        return output;
+    }
+
+    return NULL;
+}
+
+
+/* 
+ * watch_private_chat - Handle messages from recieved buffer and make 
+ * correct response. buf is recieved buffer Return value is char pointer.
+ * P.S. Add your message handling and question answer protocol here.
+ */
+char* watch_private_chat(char *buf)
+{
+    /* Check whole chat */
+    char *output = watch_whole_chat(buf);
+    if (output != NULL) return output;
+
+    /* Blah questions */
+    if (search_str(buf, "who are you") > 0) 
+    {
+        output = strdup("Im Derpina, Bitch!");
+        return output;
+    }
+
+    /* Who questions */
+    if (search_str(buf, "who is") > 0)
+    {
+        output = strdup("I dont fucking know, gtfo bitch!");
+        return output;
+    }
+
+    /* Sey hello */ 
+    if ((search_str(buf, "hey") > 0) || (search_str(buf, "hello") > 0)) 
+    {
+        output = strdup("Heey!");
+        return output;
+    }
+
+    /* More blaah questions */
+    if ((search_str(buf, "whats up") > 0)    ||
+        (search_str(buf, "what's up") > 0)   ||
+        (search_str(buf, "how are you") > 0) ||
+        (search_str(buf, "whats going") > 0) )
+    {
+        output = strdup("Heh, Just chilling. Yay!");
         return output;
     }
 
