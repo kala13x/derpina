@@ -8,6 +8,26 @@
  */
 
 
+/* C includes */
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdarg.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <errno.h>
+#include <crypt.h>
+#include <time.h>
+
+
+/* Linux includes */
+#include <netinet/in.h>
+#include <sys/utsname.h>
+#include <sys/socket.h>
+#include <sys/fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <sys/stat.h>

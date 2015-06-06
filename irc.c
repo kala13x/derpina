@@ -11,6 +11,7 @@
 #include "stdinc.h"
 #include "irc.h"
 
+
 /*
  * search_str - Search string in another string. If string 
  * is found, function returns 1, else 0 or -1. Argument str 
@@ -40,4 +41,21 @@ int search_str(char *str, char *srch)
     }
  
     return found;
+}
+
+
+/*
+ * send_data - Send data via socket. Function sends buffer with send 
+ * function and returns 1 on success. Otherwise it returns 0. Argument 
+ * sock is socket descriptor and buf is data which we want to send.
+ */
+int send_data(int sock, char *buf)
+{
+    int len = strlen(buf);
+    int bytes_sent = send(sock, buf, len, 0);
+ 
+    /* Check status */
+    if (!bytes_sent) return 0;
+    
+    return 1;
 }
