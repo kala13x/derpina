@@ -8,8 +8,8 @@
 
 
 #define VERSION_MAX     0
-#define VERSION_MIN     1
-#define BUILD_NUMBER    15
+#define VERSION_MIN     2
+#define BUILD_NUMBER    31
 
 
 /* For include header in CPP code */

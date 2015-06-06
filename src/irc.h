@@ -30,22 +30,6 @@ int search_str(char *str, char *srch);
 int send_data(int sock, char *buf);
 
 
-/*
- * create_socket - Create socket for irc server. Function creates and returns 
- * connected socket for irc server. If error is occured function returns -1. 
- * Argument addr is address for socket and port is port for socket creation.
- */
-int create_irc_socket(char *addr, char *port);
-
-
-/* 
- * create_client_socket - Function creates and returns connected 
- * client socket. If argument addr is NULL, socket will be created 
- * with INADDR_ANY flag. port argument is p for socket creation.
- */
-int create_client_socket(char *addr, char *p);
-
-
 /* 
  * send_keepalive - Function searchs ping request in recieved 
  * buffer and send pong answer to the socket. Argument sock 
@@ -55,11 +39,18 @@ void send_keepalive(int sock, char *buf);
 
 
 /* 
- * is_connected - Check if we are connected to the server.
- * Function searchs MOTD in recieved buffer and returns 1
- * if found, otherwise return value is 0. buf is a buffer.
+ * send_message - Send message in chat room. Function sends buffer with socket 
+ * in channel room. Argument sock is socket and  buf is buffer we want to send.
  */
-int is_connected(char *buf);
+void send_message(int sock, char *chan, char *buf);
+
+
+/* 
+ * handle_msg - Handle messages from recieved buffer and make 
+ * correct response. Argument sock is socket descriptor, buf 
+ * is recieved buffer and usr is bot nickname on irc server.
+ */
+void handle_msg(int sock, char *buf, char *usr, char *chan);
 
 
 /* 

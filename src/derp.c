@@ -206,8 +206,8 @@ int main(int argc, char *argv[])
             slog(0, SLOG_LIVE, "%s", buf);
         }
  
-        /* Check if ping request and send pong */
-        if (search_str(buf, "PING")) send_keepalive(sock, buf);
+        /* Handle messages */
+        handle_msg(sock, buf, usr.nick, inf.channel);
     }
 
     return 0;

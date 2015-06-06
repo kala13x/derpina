@@ -11,7 +11,7 @@ all: $(OBJ)
 	@install -m 0664 conf.cfg $(INSTALL)/
 	@echo [-] Executable files builded in - $(INSTALL) folder
 
-derp.o: irc.o conf.h info.o stdinc.h
+derp.o: irc.o conf.h info.h stdinc.h
 conf.o: conf.h stdinc.h
 info.o: info.h stdinc.h
 irc.o: irc.h stdinc.h
