@@ -35,7 +35,23 @@ int send_data(int sock, char *buf);
  * connected socket for irc server. If error is occured function returns -1. 
  * Argument addr is address for socket and port is port for socket creation.
  */
-int create_socket(char *addr, char *port);
+int create_irc_socket(char *addr, char *port);
+
+
+/* 
+ * create_client_socket - Function creates and returns connected 
+ * client socket. If argument addr is NULL, socket will be created 
+ * with INADDR_ANY flag. port argument is p for socket creation.
+ */
+int create_client_socket(char *addr, char *p);
+
+
+/* 
+ * send_keepalive - Function searchs ping request in recieved 
+ * buffer and send pong answer to the socket. Argument sock 
+ * is socket descriptor and buf is buffer recieved from socket. 
+ */
+void send_keepalive(int sock, char *buf);
 
 
 /* 

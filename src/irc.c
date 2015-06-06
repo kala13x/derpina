@@ -15,6 +15,7 @@
 
 #define MAXMSG 4098
 
+
 /*
  * search_str - Search string in another string. If string 
  * is found, function returns 1, else 0 or -1. Argument str 
@@ -25,9 +26,10 @@ int search_str(char *str, char *srch)
     int lenstr = strlen(str);
     int lensrch = strlen(srch);
     int found = -1;
+    int i, x;
  
     /* Search through each char in str */
-    for (int i = 0; i < lenstr; i++)
+    for (i = 0; i < lenstr; i++)
     {
         /* If first search item is valid then search str */
         if (srch[0] == str[i])
@@ -35,7 +37,7 @@ int search_str(char *str, char *srch)
             found = 1;
 
             /* Search the char array for search field */
-            for (int x = 1; x < lensrch; x++) 
+            for (x = 1; x < lensrch; x++) 
                 if (str[i+x] != srch[x]) found = 0;
  
             /* Return if found */
@@ -69,7 +71,7 @@ int send_data(int sock, char *buf)
  * connected socket for irc server. If error is occured function returns -1. 
  * Argument addr is address for socket and port is port for socket creation.
  */
-int create_socket(char *addr, char *port) 
+int create_irc_socket(char *addr, char *port) 
 {
     struct addrinfo hints, *sinfo;
     int sock, ret;
@@ -100,10 +102,10 @@ int create_socket(char *addr, char *port)
     ret = connect(sock, sinfo->ai_addr, sinfo->ai_addrlen);
     if (ret < 0)
     {
-        slog(0, SLOG_ERROR, "Can not connect to socket: %d", sock);
+        slog(0, SLOG_ERROR, "Can not connect to the irc socket: %d", sock);
 
         close(sock);
-        exit(-1);
+        return -1;
     }
  
     /* We dont need this anymore */
@@ -146,13 +148,71 @@ int create_client_socket(char *addr, char *p)
     ret = connect(sock, (struct sockaddr *) &name, sizeof(name));
     if (ret < 0)
     {
-        slog(2, SLOG_ERROR, "Can not connect to socket: %d", sock);
+        slog(2, SLOG_ERROR, "Can not connect to the client socket: %d", sock);
 
         close(sock);
-        return ret;
+        return -1;
     }
 
     return sock;
+}
+
+
+/* 
+ * send_keepalive - Function searchs ping request in recieved 
+ * buffer and send pong answer to the socket. Argument sock 
+ * is socket descriptor and buf is buffer recieved from socket. 
+ */
+void send_keepalive(int sock, char *buf)
+{ 
+    char *str = "PING ";
+    int found, i, x;
+ 
+    for (i = 0; i < strlen(buf); i++)
+    {
+        //If the active char is equil to the first search item then search str
+        if (buf[i] == str[0])
+        {
+            found = 1;
+
+            /* Search the char array for search field */
+            for (x = 1; x < 4; x++) 
+                if (buf[i+x]!=str[x]) found = 0;
+ 
+            /* If found */
+            if (found)
+            {
+                int count = 0;
+
+                /* Count the chars */
+                for (x = (i+strlen(str)); x < strlen(buf);x++)
+                    count++;
+
+                /* Create the new char array */
+                char returnHost[count + 5];
+                returnHost[0]='P';
+                returnHost[1]='O';
+                returnHost[2]='N';
+                returnHost[3]='G';
+                returnHost[4]=' ';
+                count = 0;
+
+                /* Set the hostname data */
+                for (int x = (i+strlen(str)); x < strlen(buf);x++)
+                {
+                    returnHost[count+5]=buf[x];
+                    count++;
+                }
+ 
+                /* Send the pong */
+                if (send_data(sock, returnHost)) 
+                {
+                    slog(0, SLOG_LIVE, "Send PONG to the irc server");
+                    return;
+                }
+            }
+        }
+    }
 }
 
 
@@ -170,8 +230,21 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
     char cmd[128];
 
     /* Create socket */
-    sock = create_client_socket(inf->server, inf->port);
-    if (sock < 0) return -1;
+    sock = create_irc_socket(inf->server, inf->port);
+    if (sock < 0) 
+    {
+        slog(0, SLOG_LIVE, "Trying another socket");
+
+        /* Create client socket */
+        sock = create_client_socket(inf->server, inf->port);
+        if (sock < 0) 
+        {
+            slog(0, SLOG_NONE, "[%s] Connection failed to the socket", 
+                strclr(2, "FATAL"));
+
+            exit(-1);
+        }
+    }
  
     while (1)
     {
@@ -206,9 +279,9 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
         if (strlen(buf) > 0) slog(0, SLOG_LIVE, "Recieved from IRC: %s", buf);
  
         /* Check if ping request and send pong */
-        //if (search_str(buf, "PING")) ret = send_keepalive(buf);
+        if (search_str(buf, "PING")) send_keepalive(sock, buf);
 
         /* Check if joined to channel */
-        //if (joined) return sock;
+        if (joined) return sock;
     }
 }

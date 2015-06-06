@@ -14,6 +14,7 @@
 #include "irc.h"
 
 #define CONFIG_FILE "conf.cfg"
+#define MAXMSG 4098
 
 
 /* 
@@ -142,6 +143,10 @@ static int parse_arguments(int argc, char *argv[], IRCUser *usr, IRCInfo *inf)
  */
 int main(int argc, char *argv[])
 {
+    /* Used variables */
+    int sock, bytes;
+    char buf[MAXMSG];
+
     /* Irc info */
     IRCUser usr;
     IRCInfo inf;
@@ -177,11 +182,29 @@ int main(int argc, char *argv[])
     print_irc_info(&usr, &inf);
 
     /* Authorize user */
-    int sock = authorise_user(&usr, &inf);
-    if (sock < 0) slog(0, SLOG_ERROR, "Disconnected from server: %s", inf.server);
+    sock = authorise_user(&usr, &inf);
+    if (sock < 0) 
+    {
+        slog(0, SLOG_ERROR, "Disconnected from server: %s", inf.server);
+        exit (-1);
+    }
 
     /* Some debug line */
     slog(0, SLOG_DEBUG, "Here we go!");
+
+    /* Main loop */
+    while (1) 
+    {
+        /* Recieve data from socket */
+        bytes = recv(sock, buf, MAXMSG-1, 0);
+        buf[bytes] = '\0';
+
+        /* Print recieved buffer */
+        if (strlen(buf) > 0) slog(0, SLOG_LIVE, "Recieved from IRC: %s", buf);
+ 
+        /* Check if ping request and send pong */
+        if (search_str(buf, "PING")) send_keepalive(sock, buf);
+    }
 
     return 0;
 }
