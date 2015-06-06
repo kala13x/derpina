@@ -246,6 +246,9 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
         }
     }
  
+    /* Clear command */
+    bzero(cmd, sizeof(cmd));
+
     while (1)
     {
         /* Move on */
@@ -254,19 +257,19 @@ int authorise_user(IRCUser *usr, IRCInfo *inf)
         switch (count) {
             case 3:
                 /* After 3 recives send data to server */
+                sprintf(cmd, "NICK %s\r\n", usr->nick);
                 send_data(sock, usr->nick);
+
+                sprintf(cmd, "USER %s\r\n", usr->name);
                 send_data(sock, usr->name);
                 break;
-
             case 4:
                 /* Join in channel */
-                bzero(cmd, sizeof(cmd));
                 sprintf(cmd, "JOIN #%s\r\n", inf->channel);
-
                 send_data(sock, cmd);
+
                 joined = 1;
                 break;
-                
             default:
                 break;
         }
