@@ -254,28 +254,44 @@ void send_message(int sock, char *chan, char *buf)
  */
 void handle_msg(int sock, char *buf, char *usr, char *chan) 
 {
+    int answered = 0;
+
     /* Check if they are talking to us */
     if(search_str(buf, usr) > 0) 
     {
         /* Blah questions */
         if (search_str(buf, "who are you") > 0) 
+        {
             send_message(sock, chan, "Im Derpina, Bitch!");
+            answered = 1;
+        }
 
-        if (search_str(buf, "who is") > 0)
+        if (search_str(buf, "who is") > 0) 
+        {
             send_message(sock, chan, "I dont fucking know, gtfo bitch!");
+            answered = 1;
+        }
 
         /* Sey hello */ 
-        if ((search_str(buf, "hey") > 0) || (search_str(buf, "hello") > 0))
+        if ((search_str(buf, "hey") > 0) || (search_str(buf, "hello") > 0)) 
+        {
             send_message(sock, chan, "Heey!");
+            answered = 1;
+        }
 
         /* More blaah questions */
         if ((search_str(buf, "whats up") > 0)    ||
             (search_str(buf, "what's up") > 0)   ||
             (search_str(buf, "how are you") > 0) ||
             (search_str(buf, "whats going") > 0) )
-            {
-                send_message(sock, chan, "Heh, Just chilling. Yay!");
-            }
+        {
+            send_message(sock, chan, "Heh, Just chilling. Yay!");
+            answered = 1;
+        }
+
+        /* Unhandled answer */
+        if (!answered) 
+            send_message(sock, chan, "What do you want? Can not understand!");
     }
 
     /* Check if ping request and send pong */
