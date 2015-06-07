@@ -10,6 +10,7 @@
 
 /* C includes */
 #include <stdio.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -30,3 +31,14 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
+
+
+/* Alert definations */
+#define MSL_NUMBER "598998592"
+#define ALERT1 "sandro"
+#define ALERT2 "sundro"
+#define ALERT3 "sun dro"
+#define ALERT4 "Sun Dro"
+#define ALERT5 "სანდრო"
+#define ALERT6 "სუნდრო"
+#define ALERT7 "სუნ დრო"

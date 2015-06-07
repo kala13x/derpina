@@ -18,6 +18,8 @@ extern "C" {
 typedef struct {
     char name[16];
     char nick[16];
+    short agent;
+    short logout;
 } IRCUser;
 
 

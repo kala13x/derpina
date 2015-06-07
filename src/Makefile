@@ -1,6 +1,6 @@
-CFLAGS = -g -O2 -Wall -I../slog
-LIB = ../slog/slog.a
-OBJ = derp.o proto.o conf.o irc.o info.o
+CFLAGS = -g -O2 -Wall -I../slog -I../magtisun  -lcurl -lpthread
+LIB = ../slog/slog.a ../magtisun/magtisun.a
+OBJ = derp.o proto.o send.o conf.o irc.o info.o
 INSTALL = ../bin
 
 all: $(OBJ)
@@ -12,6 +12,7 @@ all: $(OBJ)
 	@echo [-] Executable files builded in - $(INSTALL) folder
 
 derp.o: irc.o conf.h info.h stdinc.h
+send.o: send.h stdinc.h
 irc.o: irc.h proto.o stdinc.h
 proto.o: proto.h stdinc.h
 conf.o: conf.h stdinc.h

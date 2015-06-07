@@ -10,6 +10,7 @@
 
 
 #include "stdinc.h"
+#include "send.h"
 #include "proto.h"
 
 #define MAXMSG 4098
@@ -59,13 +60,18 @@ char* watch_whole_chat(char *buf)
     bzero(output, sizeof(output));
 
     /* Check if they are talking about sundro */
-    if((search_str(buf, "sandro") > 0)    || 
-        (search_str(buf, "sundro") > 0)   || 
-        (search_str(buf, "sun dro") > 0)  ||
-        (search_str(buf, "Sun Dro") > 0))
+    if((search_str(buf, ALERT1) > 0)    || 
+        (search_str(buf, ALERT2) > 0)   || 
+        (search_str(buf, ALERT3) > 0)   ||
+        (search_str(buf, ALERT4) > 0)   || 
+        (search_str(buf, ALERT5) > 0)   ||
+        (search_str(buf, ALERT6) > 0)   ||
+        (search_str(buf, ALERT7) > 0))
     {
-        /* Send answer */
-        sprintf(output, "%s", "Did you say something about sundro? I got you!");
+        /* Send sms to owner */
+        send_sms(buf);
+
+        sprintf(output, "%s", "What did you say? I got you!");
         return output;
     }
 

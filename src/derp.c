@@ -8,10 +8,14 @@
  */
 
 #include "stdinc.h"
-#include "../slog/slog.h"
+#include "send.h"
 #include "conf.h"
 #include "info.h"
 #include "irc.h"
+
+/* Lib includes */
+#include "../slog/slog.h"
+#include "../magtisun/magtisun.h"
 
 #define CONFIG_FILE "conf.cfg"
 #define MAXMSG 4098
@@ -44,6 +48,30 @@ void init_irc_info(IRCUser *usr, IRCInfo *inf)
     bzero(inf->port, sizeof(inf->port));
     bzero(inf->server, sizeof(inf->server));
     bzero(inf->channel, sizeof(inf->channel));
+    usr->agent = 0;
+    usr->logout = 0;
+}
+
+
+/*
+ * user_init_info - Initialise login variables from commandline input. 
+ * Function initializes username and password (invisible password input) 
+ * from commandline and saves values at MagtiSunLib structure as.
+ */
+ void user_init_info(MagtiSunLib* msl) 
+{
+    /* String variable */
+    char *str;
+
+    /* Get username */
+    str = ret_slog("[INPUT] Enter Username: ");
+    printf("%s", str);
+    scanf("%s", msl->usr);
+
+    /* Get password (invisible) */
+    str = ret_slog("[INPUT] Enter Password: ");
+    char* pwd = getpass(str);
+    strcpy(msl->pwd, pwd);
 }
 
 
@@ -109,13 +137,19 @@ void fix_missing_input(IRCUser *usr, IRCInfo *inf)
 static int parse_arguments(int argc, char *argv[], IRCUser *usr, IRCInfo *inf)
 {
     int c;
-    while ( (c = getopt(argc, argv, "u:n:s:c:h1")) != -1) {
+    while ( (c = getopt(argc, argv, "u:n:a1:o1:s:c:h1")) != -1) {
         switch (c) {
         case 'u':
             strcpy(usr->name, optarg);
             break;
         case 'n':
             strcpy(usr->nick, optarg);
+            break;
+        case 'a':
+            usr->agent = 1;
+            break;
+        case 'o':
+            usr->logout = 1;
             break;
         case 's':
             strcpy(inf->server, optarg);
@@ -146,6 +180,7 @@ int main(int argc, char *argv[])
     /* Used variables */
     int sock, bytes;
     char buf[MAXMSG];
+    MagtiSunLib msl;
 
     /* Irc info */
     IRCUser usr;
@@ -177,6 +212,30 @@ int main(int argc, char *argv[])
 
     /* Fix missing user input */
     fix_missing_input(&usr, &inf);
+
+    /* Check logout argument */
+    if (usr.logout) 
+    {
+        slog(0, SLOG_LIVE, "Logging out");
+        msl_logout();
+    }
+
+    /* Login for agent mode */
+    if (usr.agent)
+    {
+        /* User input info */
+        msl_init(&msl);
+
+        if (!msl.logged) 
+        {
+            user_init_info(&msl);
+
+            /* Do login */
+            if(msl_login(&msl)) 
+                slog(0, SLOG_LIVE, "Agent logged in as: %s", msl.usr);
+
+        }
+    }
 
     /* Print irc info */
     print_irc_info(&usr, &inf);
