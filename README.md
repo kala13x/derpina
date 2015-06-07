@@ -4,7 +4,7 @@ Derpina is Internet Realy Chat (IRC) Bot which is responsible to answer your bas
 ###Usage
 ```
 Usage: derp [-u <user>] [-n <nick>] [-s <server>] [-p <port>] [-c <room>] [-h]
-options are:\n");
+options are:
  -u         # Username for IRC
  -n         # Nickname for IRC
  -s         # Server address for IRC
