@@ -105,7 +105,7 @@ int send_data(int sock, char *buf)
  */
 void send_message(int sock, char *chan, char *buf) 
 {
-    char msg[256];
+    char msg[MAXMSG];
 
     /* Create response */
     bzero(msg, sizeof(msg));
