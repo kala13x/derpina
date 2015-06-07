@@ -283,6 +283,9 @@ void slog(int level, int flag, char *msg, ...)
                 sprintf(prints, "[%s] %s", strclr(2, "ERROR"), string);
                 break;
             case 6:
+                sprintf(prints, "[%s] %s", strclr(2, "FATAL"), string);
+                break;
+            case 7:
                 sprintf(prints, "%s", string);
                 break;
             default:

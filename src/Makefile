@@ -1,6 +1,6 @@
 CFLAGS = -g -O2 -Wall -I../slog
 LIB = ../slog/slog.a
-OBJ = derp.o conf.o irc.o info.o
+OBJ = derp.o proto.o conf.o irc.o info.o
 INSTALL = ../bin
 
 all: $(OBJ)
@@ -12,9 +12,10 @@ all: $(OBJ)
 	@echo [-] Executable files builded in - $(INSTALL) folder
 
 derp.o: irc.o conf.h info.h stdinc.h
+irc.o: irc.h proto.o stdinc.h
+proto.o: proto.h stdinc.h
 conf.o: conf.h stdinc.h
 info.o: info.h stdinc.h
-irc.o: irc.h stdinc.h
 
 .PHONY: clean
 

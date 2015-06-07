@@ -24,8 +24,8 @@ extern "C" {
 
 /* Definations for version info */
 #define SLOGVERSION_MAX  1
-#define SLOGVERSION_MIN  2
-#define SLOGBUILD_NUM    61
+#define SLOGVERSION_MIN  3
+#define SLOGBUILD_NUM    67
 
 
 /* Loging flags */
@@ -34,7 +34,8 @@ extern "C" {
 #define SLOG_WARN   3
 #define SLOG_DEBUG  4
 #define SLOG_ERROR  5
-#define SLOG_NONE   6
+#define SLOG_FATAL  6
+#define SLOG_NONE   7
 
 
 /* Date variables */
