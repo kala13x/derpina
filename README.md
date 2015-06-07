@@ -1,4 +1,4 @@
-## derpina 1.0.43 - Internet Realy Chat (IRC) Bot
+## Derpina 1.0.43 - Internet Realy Chat (IRC) Bot
 Derpina is Internet Realy Chat (IRC) Bot which is responsible to answer your basic questions, answer PING requests with PONG to stay online and log everything from chat. Software is written for educational purposes and is distributed in the hope that it will be useful for anyone interested in this field.
 
 ###Usage
