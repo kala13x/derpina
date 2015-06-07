@@ -1,5 +1,5 @@
-CFLAGS = -g -O2 -Wall -I../slog -I../magtisun  -lcurl -lpthread
-LIB = ../slog/slog.a ../magtisun/magtisun.a
+CFLAGS = -g -O2 -Wall -I../slog -I../sms -lcurl -lpthread
+LIB = ../slog/slog.a ../sms/magtisun.a
 OBJ = derp.o proto.o send.o conf.o irc.o info.o
 INSTALL = ../bin
 

@@ -182,15 +182,15 @@ void send_keepalive(int sock, char *buf)
  * correct response. Argument sock is socket descriptor, buf 
  * is recieved buffer and usr is bot nickname on irc server.
  */
-void handle_msg(int sock, char *buf, char *usr, char *chan) 
+void handle_msg(int sock, char *buf, char *usr, char *chan, int agent) 
 {
     char *answer;
 
     /* Check if they are talking to us */
     if(search_str(buf, usr) > 0) 
-        answer = watch_private_chat(buf);
+        answer = watch_private_chat(buf, agent);
     else 
-        answer = watch_whole_chat(buf);
+        answer = watch_whole_chat(buf, agent);
 
     /* Make answer */
     if (answer != NULL) 

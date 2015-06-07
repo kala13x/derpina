@@ -50,7 +50,7 @@ void send_message(int sock, char *chan, char *buf);
  * correct response. Argument sock is socket descriptor, buf 
  * is recieved buffer and usr is bot nickname on irc server.
  */
-void handle_msg(int sock, char *buf, char *usr, char *chan);
+void handle_msg(int sock, char *buf, char *usr, char *chan, int agent);
 
 
 /* 

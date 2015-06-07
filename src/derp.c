@@ -15,7 +15,7 @@
 
 /* Lib includes */
 #include "../slog/slog.h"
-#include "../magtisun/magtisun.h"
+#include "../sms/magtisun.h"
 
 #define CONFIG_FILE "conf.cfg"
 #define MAXMSG 4098
@@ -231,10 +231,15 @@ int main(int argc, char *argv[])
             user_init_info(&msl);
 
             /* Do login */
-            if(msl_login(&msl)) 
-                slog(0, SLOG_LIVE, "Agent logged in as: %s", msl.usr);
+            if(!msl_login(&msl)) 
+            {
+                slog(0, SLOG_ERROR, "Can not login as agent");
+                usr.agent = 0;
+            }
 
         }
+
+        slog(0, SLOG_LIVE, "Agent logged in as: %s", msl.usr);
     }
 
     /* Print irc info */
@@ -266,7 +271,7 @@ int main(int argc, char *argv[])
         }
  
         /* Handle messages */
-        handle_msg(sock, buf, usr.nick, inf.channel);
+        handle_msg(sock, buf, usr.nick, inf.channel, usr.agent);
     }
 
     return 0;

@@ -27,14 +27,14 @@ int search_str(char *str, char *srch);
  * correct response. buf is recieved buffer Return value is char pointer.
  * P.S. Add your message handling and question answer protocol here.
  */
-char* watch_private_chat(char *buf);
+char* watch_private_chat(char *buf, int agent);
 
 /* 
  * watch_whole_chat - Handle messages in public from recieved buffer 
  * and make correct response. buf is recieved buffer Return value is 
  * char pointer. P.S. Add your questions and answers protocol here.
  */
-char* watch_whole_chat(char *buf);
+char* watch_whole_chat(char *buf, int agent);
 
 
 /* For include header in CPP code */

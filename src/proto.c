@@ -54,7 +54,7 @@ int search_str(char *str, char *srch)
  * and make correct response. buf is recieved buffer Return value is 
  * char pointer. P.S. Add your questions and answers protocol here.
  */
-char* watch_whole_chat(char *buf) 
+char* watch_whole_chat(char *buf, int agent) 
 {
     static char output[MAXMSG];
     bzero(output, sizeof(output));
@@ -69,7 +69,7 @@ char* watch_whole_chat(char *buf)
         (search_str(buf, ALERT7) > 0))
     {
         /* Send sms to owner */
-        send_sms(buf);
+        if (agent) send_sms(buf);
 
         sprintf(output, "%s", "What did you say? I got you!");
         return output;
@@ -84,10 +84,10 @@ char* watch_whole_chat(char *buf)
  * correct response. buf is recieved buffer Return value is char pointer.
  * P.S. Add your message handling and question answer protocol here.
  */
-char* watch_private_chat(char *buf)
+char* watch_private_chat(char *buf, int agent)
 {
     /* Check whole chat */
-    char *output = watch_whole_chat(buf);
+    char *output = watch_whole_chat(buf, agent);
     if (output != NULL) return output;
 
     /* Blah questions */

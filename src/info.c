@@ -60,10 +60,12 @@ void greet(char *p_name)
  */
 void usage(void) 
 {
-    printf("\nUsage: derp [-u <user>] [-n <nick>] [-s <server>] [-p <port>] [-c <room>] [-h]\n");
+    printf("\nUsage: derp [-u <user>] [-n <nick>] [-a] [-o] [-s <server>] [-p <port>] [-c <room>] [-h]\n");
     printf("options are:\n");
     printf(" -u         # Username for IRC\n");
     printf(" -n         # Nickname for IRC\n");
+    printf(" -a         # Agent mode\n");
+    printf(" -o         # Logout from agent mode\n");
     printf(" -s         # Server address for IRC\n");
     printf(" -p         # Port for IRC\n");
     printf(" -c         # Channel room for IRC\n");

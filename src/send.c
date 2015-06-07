@@ -8,7 +8,7 @@
  */
 
 
-#include "../magtisun/magtisun.h"
+#include "../sms/magtisun.h"
 #include "../slog/slog.h"
 #include "stdinc.h"
 #include "send.h"
