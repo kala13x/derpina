@@ -1,5 +1,5 @@
 ## Derpina 1.0.43 - Internet Realy Chat (IRC) Bot
-Derpina is Internet Realy Chat (IRC) Bot which is responsible to answer your basic questions, answer PING requests with PONG to stay online and log everything from chat. You can add your question/answers in proto.c file to handle more messages from chat and make bot more communicative. Software is written for educational purposes and is distributed in the hope that it will be useful for anyone interested in this field.
+Derpina is Internet Realy Chat (IRC) Bot which is responsible to answer your basic questions, answer PING requests with PONG to stay online and log everything from chat. Derpina has agent mode, if you will enable agent mode, derpina searchs keywors in whole chat and if he detects keywords which are defined in stdinc.h file, derpina sends you message in mobile nomber via magtisun library. You can add your question/answers in proto.c file to handle more messages from chat and make bot more communicative. Software is written for educational purposes and is distributed in the hope that it will be useful for anyone interested in this field.
 
 ###Usage
 ```
@@ -23,6 +23,19 @@ SERVER irc.server.com
 PORT 6667
 CHANNEL channel
 ```
+
+###Agent mode
+Derpina has agent mode, if you will enable agent mode, derpina searchs keywors in whole chat and if he detects keywords which are defined in stdinc.h file, derpina sends you message in mobile nomber via magtisun library.
+Here is arguments how to use agent mode:
+```
+-a  #enable agent mode
+-o  #disable agent mode
+```
+
+With argument -a, derpina enables agent mode and makes you able to input your magtifun number and password. Derpina searches keywords which are defined as ALERT in src/stdinc.h file and if deprina founds keywords in IRC chat, it sends whole message at your phone number, which is defined in src/stdinc.h file as MSL_NUMBER.
+
+With argument -o, derpina disables recently enabled agent mode and runs normally.
+
 ###Compilation
 Compilation is possible with build.sh script and Makefiles
 ```
