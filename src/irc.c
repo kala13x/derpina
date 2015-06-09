@@ -159,7 +159,7 @@ void send_keepalive(int sock, char *buf)
                 count = 0;
 
                 /* Set the hostname data */
-                for (int x = (i+strlen(str)); x < strlen(buf);x++)
+                for (x = (i+strlen(str)); x < strlen(buf);x++)
                 {
                     returnHost[count+5]=buf[x];
                     count++;

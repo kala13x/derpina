@@ -5,7 +5,7 @@ cd ${PWD##}/slog
 make clean
 make
 
-cd ../magtisun
+cd ../sms
 make clean
 make
 
