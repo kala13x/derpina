@@ -151,6 +151,7 @@ void send_keepalive(int sock, char *buf)
 
                 /* Create the new char array */
                 char returnHost[count + 5];
+                bzero(returnHost, sizeof(returnHost));
                 returnHost[0]='P';
                 returnHost[1]='O';
                 returnHost[2]='N';
