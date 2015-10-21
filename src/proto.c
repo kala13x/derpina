@@ -104,28 +104,28 @@ char* watch_private_chat(char *buf, int agent)
         output = strdup("Im Derpina, Bitch!");
         return output;
     }
-
-    /* Who questions */
-    if (search_str(buf, "who is") > 0)
+    else if (search_str(buf, "who is") > 0)
     {
         output = strdup("I dont fucking know, gtfo bitch!");
         return output;
     }
-
-    /* Sey hello */ 
-    if ((search_str(buf, "hey") > 0) || (search_str(buf, "hello") > 0)) 
+    else if ((search_str(buf, "hey") > 0) 
+        || (search_str(buf, "hello") > 0)) 
     {
         output = strdup("Heey!");
         return output;
     }
-
-    /* More blaah questions */
-    if ((search_str(buf, "whats up") > 0)    ||
-        (search_str(buf, "what's up") > 0)   ||
+    else if ((search_str(buf, "whats up") > 0) ||
+        (search_str(buf, "what's up") > 0) ||
         (search_str(buf, "how are you") > 0) ||
         (search_str(buf, "whats going") > 0) )
     {
         output = strdup("Heh, Just chilling. Yay!");
+        return output;
+    }
+    else 
+    {
+        output = strdup("What? o.O");
         return output;
     }
 
