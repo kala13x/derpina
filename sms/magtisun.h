@@ -18,6 +18,8 @@
  * Lesser General Public License for more details.
  */
 
+#ifndef __LIB_MAGTISUN_H__
+#define __LIB_MAGTISUN_H__
 
 /* For include header in CPP code */
 #ifdef __cplusplus
@@ -35,8 +37,9 @@ extern "C" {
 #define LOGIN_FILE "/tmp/msl"
 
 /* Version and build number */
-#define MSLVERSION "1.0.2 Snapshot"
-#define MSLBUILD 31
+#define MSLVERSION_MAX 1
+#define MSLVERSION_MIN 0
+#define MSLBUILD 35
 
 
 /* Structure of user variables */
@@ -55,23 +58,7 @@ typedef struct {
  * Get library version. Function returns version and build number
  * of magtifun c library.  Return value is  static  char pointer.
  */
-const char* msl_get_version();
-
-
-/*
- * msl_decrypt - Simple dencryption of string which was 
- * recently crypted with msl_crypt. Argument str is stryng
- * which we want to encrypt. Return value is encrypted string.
- */
-char* msl_decrypt(char *str);
-
-
-/*
- * msl_crypt - Simple encryption of string. Function takes string, 
- * encrypts it with hex key and returns as char pointer. Argument 
- * str is strring to encrypt. Return value is encrypted string.
- */
-char* msl_crypt(char *str);
+const char* msl_get_version(int min);
 
 
 /*
@@ -81,27 +68,6 @@ char* msl_crypt(char *str);
  * logged in, msl->logged flag will be 1, otherwise logged flag will be 0.
  */
  void msl_init(MagtiSunLib* msl);
-
-
-/*
- * msl_cli_init - Initialise login variables from commandline input. 
- * Function initializes username and password (invisible password input) 
- * from commandline and saves values at MagtiSunLib structure as:
- * 
- * @ msl->usr - username
- * @ msl->pwd - password
- */
-void msl_cli_init(MagtiSunLib* msl);
-
-
-/*
- * msl_init_sms - Initialize sms variables from commandline input. 
- * Function initializes mobile number and sms text from commandline.
- * 
- * @ msl->num - adress number
- * @ msl->txt - sms text
- */
- void msl_init_sms(MagtiSunLib* msl);
 
 
 /*
@@ -149,4 +115,6 @@ void msl_logout();
 /* For include header in CPP code */
 #ifdef __cplusplus
 }
+#endif
+
 #endif

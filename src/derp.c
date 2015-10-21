@@ -20,6 +20,7 @@
 #define CONFIG_FILE "conf.cfg"
 #define MAXMSG 4098
 
+static MutexSync lock;
 
 /* 
  * clean_prog - Cleanup on exit. Function handles exit signal
@@ -186,6 +187,10 @@ int main(int argc, char *argv[])
     IRCUser usr;
     IRCInfo inf;
 
+    /* Thread safe */
+    sync_init(&lock);
+    slog_set_mutex(&lock);
+
     /* Greet users */
     greet("IRC Bot Derpina");
     slog(0, SLOG_INFO, "Logger Version: %s", slog_version(1));
@@ -196,7 +201,7 @@ int main(int argc, char *argv[])
     signal(SIGILL , clean_prog);
 
     /* Initialize logger and irc info */
-    init_slog("derpina", "conf.cfg", 2);
+    init_slog("derpina", "conf.cfg", 2, NULL);
     init_irc_info(&usr, &inf);
 
     /* Initialize irc config */
@@ -239,7 +244,8 @@ int main(int argc, char *argv[])
 
         }
 
-        slog(0, SLOG_LIVE, "Agent logged in as: %s", msl.usr);
+        slog(0, SLOG_INFO, "SMS Agent Version: %s", msl_get_version(1));
+        slog(0, SLOG_INFO, "SMS Agent logged in as: %s", msl.usr);
     }
 
     /* Print irc info */

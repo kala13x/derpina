@@ -1,16 +1,26 @@
-CFLAGS = -g -O2 -Wall -fPIC
+CFLAGS = -g -O2 -Wall -lpthread
 OBJS = slog.o
+
+LIBINSTALL = /usr/local/lib
+HEADINSTALL = /usr/local/include
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(LIB)
 
-slog.a: $(OBJS)
-	$(AR) rcs slog.a $(OBJS)
-	@echo [-] Syncing static logger library
+libslog.a: $(OBJS)
+	$(AR) rcs libslog.a $(OBJS)
+	@echo [-] Syncing static library
 	sync
 
-slog.o: slog.h 
+install:
+	@test -d $(LIBINSTALL) || mkdir $(LIBINSTALL)
+	@test -d $(HEADINSTALL) || mkdir $(HEADINSTALL)
+	@install -m 0664 libslog.a $(LIBINSTALL)/
+	@install -m 0664 slog.h $(HEADINSTALL)/
+	@echo [-] Done
+
+slog.o: slog.h
 
 .PHONY: clean
 clean:
-	$(RM) slog.a $(OBJS)
+	$(RM) libslog.a $(OBJS)

@@ -11,6 +11,7 @@
 #include "../sms/magtisun.h"
 #include "../slog/slog.h"
 #include "stdinc.h"
+#include "agent.h"
 #include "send.h"
 
 
@@ -21,7 +22,8 @@
  */
 void init_msl_sms(MagtiSunLib * msl, char *buf) 
 {
-    strcpy(msl->num, MSL_NUMBER);
+
+    sprintf(msl->num, "%s", get_agent_number("agent.cfg"));
     strcpy(msl->txt, buf);
 }
 

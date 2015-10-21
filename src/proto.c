@@ -11,6 +11,7 @@
 
 #include "stdinc.h"
 #include "send.h"
+#include "agent.h"
 #include "proto.h"
 
 #define MAXMSG 4098
@@ -56,23 +57,30 @@ int search_str(char *str, char *srch)
  */
 char* watch_whole_chat(char *buf, int agent) 
 {
-    static char output[MAXMSG];
+    static char output[256];
     bzero(output, sizeof(output));
+    int i;
+
+    /* Get alert number */
+    int alerts_num = get_alerts_number("agent.cfg");
+    if (!alerts_num) return NULL;
+
+    /* Get alerts */
+    char *alerts[alerts_num];
+    parse_agent_cfg("agent.cfg", alerts);
+    if (!alerts_num) return NULL;
 
     /* Check if they are talking about sundro */
-    if((search_str(buf, ALERT1) > 0)    || 
-        (search_str(buf, ALERT2) > 0)   || 
-        (search_str(buf, ALERT3) > 0)   ||
-        (search_str(buf, ALERT4) > 0)   || 
-        (search_str(buf, ALERT5) > 0)   ||
-        (search_str(buf, ALERT6) > 0)   ||
-        (search_str(buf, ALERT7) > 0))
+    for(i = 0; i < alerts_num; i++) 
     {
-        /* Send sms to owner */
-        if (agent) send_sms(buf);
+        if(search_str(buf, alerts[i]) > 0) 
+        {
+            /* Send sms to owner */
+            if (agent) send_sms(buf);
 
-        sprintf(output, "%s", "What did you say? I got you!");
-        return output;
+            sprintf(output, "%s", "What did you say? I got you!");
+            return output;
+        }
     }
 
     return NULL;

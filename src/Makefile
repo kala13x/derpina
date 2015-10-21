@@ -1,6 +1,6 @@
 CFLAGS = -g -O2 -Wall -I../slog -I../sms -lcurl -lpthread
-LIB = ../slog/slog.a ../sms/magtisun.a
-OBJ = derp.o proto.o send.o conf.o irc.o info.o
+LIB = ../slog/libslog.a ../sms/libmagtisun.a
+OBJ = derp.o proto.o send.o agent.o conf.o irc.o info.o
 INSTALL = ../bin
 
 all: $(OBJ)
@@ -13,6 +13,7 @@ all: $(OBJ)
 
 derp.o: irc.o conf.h info.h stdinc.h
 send.o: send.h stdinc.h
+agent.o: agent.h stdinc.h
 irc.o: irc.h proto.o stdinc.h
 proto.o: proto.h stdinc.h
 conf.o: conf.h stdinc.h

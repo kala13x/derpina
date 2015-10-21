@@ -1,25 +1,35 @@
 /*
- *  slog is Advanced logging library for C/C++
+ * The MIT License (MIT)
+ *  
+ *  Copyleft (C) 2015  Sun Dro (a.k.a. kala13x)
  *
- *  Copyright (c) 2015 Sun Dro (a.k.a. 7th Ghost)
- *  Web: http://off-sec.com/ ; E-Mail: kala0x13@gmail.com
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE
  */
 
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <stdarg.h>
+#include <limits.h>
+#include <errno.h>
 #include <time.h>
 #include "slog.h"
 
@@ -38,14 +48,138 @@
 #define MAXMSG 8196
 
 /* Flags */
-static slog_flags slg;
+static SlogFlags slg;
+static MutexSync *slock = NULL;
 
 
 /*
- * get_system_date - Intialize date with system date.
- * Argument is pointer of SystemDate structure.
+ * slog_set_mutex - Initialize slog mutex variable.
+ * Argument lock is pointer of MutexSync structure.
  */
-void get_system_date(SystemDate *mdate) 
+void slog_set_mutex(MutexSync *lock) { slock = lock; }
+
+
+/* 
+ * sync_init - Initialize mutex and set mutex attribute.
+ * Argument m_sync is pointer of MutexSync structure.
+ */
+void sync_init(MutexSync *m_sync)
+{
+    /* Set flags */
+    m_sync->status_ok = 0;
+    m_sync->m_locked = 0;
+
+    /* Init mutex attribute */
+    if (pthread_mutexattr_init(&m_sync->m_attr) ||
+        pthread_mutexattr_settype(&m_sync->m_attr, PTHREAD_MUTEX_RECURSIVE) ||
+        pthread_mutex_init(&m_sync->mutex, &m_sync->m_attr) ||
+        pthread_mutexattr_destroy(&m_sync->m_attr))
+    {
+        printf("<%s:%d> %s: [ERROR] Can not initialize mutex: %d\n", 
+            __FILE__, __LINE__, __FUNCTION__, errno);
+
+        return;
+    }
+
+    m_sync->status_ok = 1;
+}
+
+
+/*
+ * sync_destroy - Deitialize mutex and exit if error.
+ * Argument m_sync is pointer of MutexSync structure.
+ */
+void sync_destroy(MutexSync *m_sync)
+{
+    if (pthread_mutex_destroy(&m_sync->mutex))
+    {
+        printf("<%s:%d> %s: [ERROR] Can not deinitialize mutex: %d\n", 
+            __FILE__, __LINE__, __FUNCTION__, errno);
+
+        m_sync->status_ok = 0;
+        return;
+    }
+    m_sync->status_ok = 1;
+}
+
+
+/* 
+ * sync_lock - Reinitialize mutex again and set status.
+ * Argument m_sync is pointer of MutexSync structure.
+ */
+void sync_reload(MutexSync *m_sync)
+{
+    sync_destroy(m_sync);
+
+    if(m_sync->status_ok) 
+        sync_init(m_sync);
+}
+
+
+/* 
+ * sync_lock - Lock mutex and and exit if error.
+ * Argument m_sync is pointer of MutexSync structure.
+ */
+void sync_lock(MutexSync *m_sync)
+{
+    if (m_sync->status_ok) 
+    {
+        if (pthread_mutex_lock(&m_sync->mutex))
+        {
+            printf("<%s:%d> %s: [ERROR] Can not lock mutex: %d\n", 
+                __FILE__, __LINE__, __FUNCTION__, errno);
+
+            m_sync->status_ok = 0;
+            return;
+        }
+        m_sync->m_locked = 1;
+    }
+    else
+    {
+        printf("<%s:%d> %s: [WARN] Locking bad mutex\n", 
+            __FILE__, __LINE__, __FUNCTION__);
+
+        /* Fix bad status */
+        if (errno == EAGAIN) m_sync->status_ok = 1;
+        else sync_reload(m_sync);
+    }
+}
+
+
+/* 
+ * sync_lock - Unlock mutex and and exit if error.
+ * Argument m_sync is pointer of MutexSync structure.
+ */
+void sync_unlock(MutexSync *m_sync)
+{
+    if (m_sync->status_ok) 
+    {
+        if (pthread_mutex_unlock(&m_sync->mutex))
+        {
+            printf("<%s:%d> %s: [ERROR] Can not unlock mutex: %d\n", 
+            __FILE__, __LINE__, __FUNCTION__, errno);
+                
+            m_sync->status_ok = 0;
+            return;
+        }
+        m_sync->m_locked = 0;
+    }
+    else 
+    {
+        printf("<%s:%d> %s: [WARN] Unlocking bad mutex\n", 
+            __FILE__, __LINE__, __FUNCTION__);
+
+        /* Reset */
+        sync_reload(m_sync);
+    }
+}
+
+
+/*
+ * get_slog_date - Intialize date with system date.
+ * Argument is pointer of SlogDate structure.
+ */
+void get_slog_date(SlogDate *sdate)
 {
     time_t rawtime;
     struct tm *timeinfo;
@@ -53,21 +187,21 @@ void get_system_date(SystemDate *mdate)
     timeinfo = localtime(&rawtime);
 
     /* Get System Date */
-    mdate->year = timeinfo->tm_year+1900;
-    mdate->mon = timeinfo->tm_mon+1;
-    mdate->day = timeinfo->tm_mday;
-    mdate->hour = timeinfo->tm_hour;
-    mdate->min = timeinfo->tm_min;
-    mdate->sec = timeinfo->tm_sec;
+    sdate->year = timeinfo->tm_year+1900;
+    sdate->mon = timeinfo->tm_mon+1;
+    sdate->day = timeinfo->tm_mday;
+    sdate->hour = timeinfo->tm_hour;
+    sdate->min = timeinfo->tm_min;
+    sdate->sec = timeinfo->tm_sec;
 }
 
 
 /* 
  * Get library version. Function returns version and build number of slog 
  * library. Return value is char pointer. Argument min is flag for output 
- * format. If min is 0, function returns version in full  format, if flag 
- * is 1 function returns only version number, For examle: 1.3.0
- */
+ * format. If min is 1, function returns version in full  format, if flag 
+ * is 0 function returns only version numbers, For examle: 1.3.0
+-*/
 const char* slog_version(int min)
 {
     static char verstr[128];
@@ -85,10 +219,20 @@ const char* slog_version(int min)
 
 
 /*
- * strclr - Colorize string. Function takes color value and string 
- * and returns colorized string as char pointer. First argument clr 
- * is color value (if it is invalid, function retunrs NULL) and second 
+ * strclr - Colorize string. Function takes color value and string
+ * and returns colorized string as char pointer. First argument clr
+ * is color value (if it is invalid, function retunrs NULL) and second
  * is string with va_list of arguments which one we want to colorize.
+ * 
+ * Color values are:
+ *  0 - Normal
+ *  1 - Green
+ *  2 - Red
+ *  3 - Yellow
+ *  4 - Blue
+ *  5 - Nagenta
+ *  6 - Cyan
+ *  7 - White
  */
 char* strclr(int clr, char* str, ...) 
 {
@@ -140,17 +284,21 @@ char* strclr(int clr, char* str, ...)
 
 /*
  * log_to_file - Save log in file. Argument aut is string which
- * we want to log. Argument fname is log file path and mdate is 
- * SystemDate structure variable, we need it to create filename.
+ * we want to log. Argument fname is log file path and sdate is
+ * SlogDate structure variable, we need it to create filename.
  */
-void log_to_file(char *out, char *fname, SystemDate *mdate) 
+void log_to_file(char *out, const char *fname, SlogDate *sdate)
 {
     /* Used variables */
-    char filename[32];
+    char filename[PATH_MAX];
 
     /* Create log filename with date */
-    sprintf(filename, "%s-%02d-%02d-%02d.log", 
-        fname, mdate->year, mdate->mon, mdate->day);
+    if (slg.filestamp)
+    {
+        snprintf(filename, sizeof(filename), "%s-%02d-%02d-%02d.log",
+            fname, sdate->year, sdate->mon, sdate->day);
+    }
+    else snprintf(filename, sizeof(filename), "%s.log", fname);
 
     /* Open file pointer */
     FILE *fp = fopen(filename, "a");
@@ -165,40 +313,52 @@ void log_to_file(char *out, char *fname, SystemDate *mdate)
 
 
 /*
- * parse_slog_config - Parse config file. Argument cfg_name is 
- * path of config file name to be parsed. Function opens config 
- * file and parses LOGLEVEL and LOGTOFILE flags from it.
+ * parse_config - Parse config file. Argument cfg_name is path 
+ * of config file name to be parsed. Function opens config file 
+ * and parses LOGLEVEL and LOGTOFILE flags from it.
  */
-int parse_slog_config(char *cfg_name)
+int slog_parse_config(const char *cfg_name)
 {
     /* Used variables */
     FILE *file;
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    int ret = 1;
+    int ret = 0;
 
     /* Open file pointer */
     file = fopen(cfg_name, "r");
-    if(file == NULL) return 1;
+    if(file == NULL) return 0;
 
     /* Line-by-line read cfg file */
-    while ((read = getline(&line, &len, file)) != -1) 
+    while ((read = getline(&line, &len, file)) != -1)
     {
         /* Find level in file */
-        if(strstr(line, "LOGLEVEL") != NULL) 
+        if(strstr(line, "LOGLEVEL") != NULL)
         {
-            /* Get log level */
+            /* Get logtofile flag */
             slg.level = atoi(line+8);
-            ret = 0;
+            ret = 1;
         }
-        else if(strstr(line, "LOGTOFILE") != NULL) 
+        else if(strstr(line, "LOGTOFILE") != NULL)
         {
             /* Get log level */
             slg.to_file = atoi(line+9);
-            ret = 0;
+            ret = 1;
         }
-    } 
+        else if(strstr(line, "PRETTYLOG") != NULL)
+        {
+            /* Get log type */
+            slg.pretty = atoi(line+9);
+            ret = 1;
+        }
+        else if(strstr(line, "FILESTAMP") != NULL)
+        {
+            /* Get filestamp */
+            slg.filestamp = atoi(line+9);
+            ret = 1;
+        }
+    }
 
     /* Cleanup */
     if (line) free(line);
@@ -218,10 +378,10 @@ char* ret_slog(char *msg, ...)
     /* Used variables */
     static char output[MAXMSG];
     char string[MAXMSG];
-    SystemDate mdate;
+    SlogDate mdate;
 
     /* initialise system date */
-    get_system_date(&mdate);
+    get_slog_date(&mdate);
 
     /* Read args */
     va_list args;
@@ -240,21 +400,25 @@ char* ret_slog(char *msg, ...)
 
 
 /*
- * slog - Log exiting process. Function takes arguments and saves 
- * log in file if LOGTOFILE flag is enabled from config. Otherwise 
- * it just prints log without saveing in file. Argument level is 
+ * slog - Log exiting process. Function takes arguments and saves
+ * log in file if LOGTOFILE flag is enabled from config. Otherwise
+ * it just prints log without saveing in file. Argument level is
  * logging level and flag is slog flags defined in slog.h header.
  */
-void slog(int level, int flag, char *msg, ...) 
+void slog(int level, int flag, const char *msg, ...)
 {
     /* Used variables */
-    SystemDate mdate;
+    SlogDate mdate;
     char string[MAXMSG];
     char prints[MAXMSG];
+    char wfiles[MAXMSG];
     char *output;
 
+    /* Lock for safe */
+    if (slock != NULL) sync_lock(slock);
+
     /* Initialise system date */
-    get_system_date(&mdate);
+    get_slog_date(&mdate);
 
     /* Read args */
     va_list args;
@@ -263,30 +427,40 @@ void slog(int level, int flag, char *msg, ...)
     va_end(args);
 
     /* Check logging levels */
-    if(level <= slg.level) 
+    if(!level || level <= slg.level)
     {
         /* Handle flags */
         switch(flag) {
             case 1:
                 sprintf(prints, "[LIVE]  %s", string);
+                strcpy(wfiles, prints);
                 break;
             case 2:
                 sprintf(prints, "[%s]  %s", strclr(1, "INFO"), string);
+                sprintf(wfiles, "[INFO]  %s", string);
                 break;
             case 3:
                 sprintf(prints, "[%s]  %s", strclr(3, "WARN"), string);
+                sprintf(wfiles, "[WARN]  %s", string);
                 break;
             case 4:
                 sprintf(prints, "[%s] %s", strclr(4, "DEBUG"), string);
+                sprintf(wfiles, "[DEBUG] %s", string);
                 break;
             case 5:
                 sprintf(prints, "[%s] %s", strclr(2, "ERROR"), string);
+                sprintf(wfiles, "[ERROR] %s", string);
                 break;
             case 6:
                 sprintf(prints, "[%s] %s", strclr(2, "FATAL"), string);
+                sprintf(wfiles, "[FATAL] %s", string);
                 break;
             case 7:
-                sprintf(prints, "%s", string);
+                sprintf(prints, "[%s] %s", strclr(6, "PANIC"), string);
+                sprintf(wfiles, "[PANIC] %s", string);
+                break;
+            case 8:
+                sprintf(prints, "%s", string); strcpy(wfiles, prints);
                 break;
             default:
                 break;
@@ -296,12 +470,18 @@ void slog(int level, int flag, char *msg, ...)
         printf("%s", ret_slog("%s\n", prints));
 
         /* Save log in file */
-        if (slg.to_file) 
+        if (slg.to_file)
         {
-            output = ret_slog("%s\n", string);
+            if (slg.pretty) output = ret_slog("%s\n", prints);
+            else output = ret_slog("%s\n", wfiles);
+
+            /* Add log line to file */
             log_to_file(output, slg.fname, &mdate);
         }
     }
+
+    /* Done, unlock mutex */
+    if (slock != NULL) sync_unlock(slock);
 }
 
 
@@ -309,19 +489,29 @@ void slog(int level, int flag, char *msg, ...)
  * Initialize slog library. Function parses config file and reads log 
  * level and save to file flag from config. First argument is file name 
  * where log will be saved and second argument conf is config file path 
- * to be parsed and third argument lvl is log level for this message.
+ * to be parsedand third argument lvl is log level for this message.
  */
-void init_slog(char* fname, char* conf, int lvl) 
+void init_slog(const char* fname, const char* conf, int lvl, MutexSync *lock)
 {
+    int status = 0;
+
+    /* Set up default values */
     slg.level = lvl;
-    slg.fname = fname;
     slg.to_file = 0;
+    slg.pretty = 0;
+    slg.filestamp = 1;
 
     /* Parse config file */
-    if (parse_slog_config(conf)) 
+    if (conf != NULL) 
     {
-        slog(0, SLOG_WARN, "LOGLEVEL and/or LOGTOFILE flag is not set from config.");
-
-        return;
+        slg.fname = fname;
+        status = slog_parse_config(conf);
     }
+
+    /* Set slog mutex */
+    if (lock != NULL) slock = lock;
+
+    /* Handle config parser status */
+    if (!status) slog(0, SLOG_INFO, "Initializing logger values without config");
+    else slog(0, SLOG_INFO, "Loading logger config from: %s", conf);
 }
