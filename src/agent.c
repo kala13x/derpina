@@ -37,7 +37,8 @@ int parse_agent_cfg(const char *cfg_name, char *alerts[])
         if(strstr(line, "ALERT") != NULL)
         {
             /* Get alert definition */
-            alerts[count] = strdup(line+5);
+            sscanf(line, "%512[^\n]\n", line);
+            alerts[count] = strdup(line+6);
             count++;
         }
     }
@@ -105,7 +106,8 @@ char* get_agent_number(const char *cfg_name)
         /* Find number in file */
         if(strstr(line, "NUMBER") != NULL) 
         {
-            number = strdup(line+6);
+            sscanf(line, "%512[^\n]\n", line);
+            number = strdup(line+7);
             break;
         }
     }
