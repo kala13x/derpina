@@ -343,7 +343,6 @@ int msl_get_info(MagtiSunLib* msl)
 void msl_logout() 
 {
     remove(LOGIN_FILE);
-    exit(1);
 }
 
 

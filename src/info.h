@@ -9,7 +9,7 @@
 
 #define VERSION_MAX     1
 #define VERSION_MIN     2
-#define BUILD_NUMBER    54
+#define BUILD_NUMBER    56
 
 
 /* For include header in CPP code */

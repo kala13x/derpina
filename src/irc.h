@@ -15,11 +15,11 @@ extern "C" {
 
 
 /*
- * search_str - Search string in another string. If string 
+ * strsrc - Search string in another string. If string 
  * is found, function returns 1, else 0 or -1. Argument str 
  * is string to search and srch is string we want search for.
  */
-int search_str(char *str, char *srch);
+int strsrc(char *str, char *srch);
 
 
 /*

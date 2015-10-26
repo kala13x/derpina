@@ -131,6 +131,12 @@ void sync_unlock(MutexSync *m_sync);
 -*/
 const char* slog_version(int min);
 
+/*
+ * get_slog_date - Intialize date with system date.
+ * Argument is pointer of SlogDate structure.
+ */
+void get_slog_date(SlogDate *sdate);
+
 
 /*
  * Initialize slog library. Function parses config file and reads log

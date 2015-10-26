@@ -1,12 +1,15 @@
-CFLAGS = -g -O2 -Wall -I../slog -I../sms -lcurl -lpthread
+CFLAGS = -g -O2 -Wall -I../slog -I../sms -lcurl -lpthread -lcrypt
 LIB = ../slog/libslog.a ../sms/libmagtisun.a
 OBJ = derp.o proto.o send.o agent.o conf.o irc.o info.o
 INSTALL = ../bin
 
+
 all: $(OBJ)
 	$(CC) $(CFLAGS) -o derp $(OBJ) $(LIB)
+	$(CC) -o keygen keygen.c -lcrypt
 	@echo [-] Building binaries into - $(INSTALL)
 	@test -d $(INSTALL) || mkdir $(INSTALL)
+	@install -m 0755 keygen $(INSTALL)/
 	@install -m 0755 derp $(INSTALL)/
 	@install -m 0664 conf.cfg $(INSTALL)/
 	@echo [-] Executable files builded in - $(INSTALL) folder

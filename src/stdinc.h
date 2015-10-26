@@ -20,7 +20,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include <time.h>
-
+#include <crypt.h>
 
 /* Linux includes */
 #include <netinet/in.h>

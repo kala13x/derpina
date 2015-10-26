@@ -13,16 +13,19 @@
 #include "send.h"
 #include "agent.h"
 #include "proto.h"
+#include "../slog/slog.h"
+#include "../sms/magtisun.h"
 
 #define MAXMSG 4098
 
+static int do_response = 1;
 
 /*
- * search_str - Search string in another string. If string 
+ * strsrc - Search string in another string. If string 
  * is found, function returns 1, else 0 or -1. Argument str 
  * is string to search and srch is string we want search for.
  */
-int search_str(char *str, char *srch)
+int strsrc(char *str, char *srch)
 {
     int lenstr = strlen(str);
     int lensrch = strlen(srch);
@@ -50,6 +53,45 @@ int search_str(char *str, char *srch)
 }
 
 
+/*
+ * strcrypt - Crypt string with gnu c crypt library.
+ * Argument str is string which we want to crypt and
+ * return value is char pointer of the crypted string.
+ * Crypted string with strcrypt, can not be decrypted.
+ */
+char* strcrypt(char* str)
+{
+    /* Used Variables */
+    unsigned long seed[2];
+    char *crypted;
+    int i;
+
+    /* Salt */
+    char salt[] = "$1$..............";
+
+    /* Seedchars */
+    const char *const seedchars = 
+    "./0123456789ABCDEFGHIJKLMNOPQRST"                                
+    "UVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    /* Generate a (not very) random seed */
+    seed[0] = 1920 * 69 * 13;
+    seed[1] = 3321 ^ (seed[0] >> 14 & 0x30000);
+
+    /* Turn it into printable characters from ‘seedchars’ */
+    for (i = 0; i < 8; i++)
+        salt[3+i] = seedchars[(seed[i/5] >> (i%5)*6) & 0x3f];
+
+    /* Encrypt it */
+    crypted = crypt(str, salt);
+
+    /* Remove salt */
+    sscanf(crypted, "$1$.SY4.tn.$%[^:]:", crypted);
+
+    return crypted;
+}
+
+
 /* 
  * watch_whole_chat - Handle messages in public from recieved buffer 
  * and make correct response. buf is recieved buffer Return value is 
@@ -59,7 +101,7 @@ char* watch_whole_chat(char *buf, int agent)
 {
     static char output[256];
     bzero(output, sizeof(output));
-    int i;
+        int i;
 
     /* Get alert number */
     int alerts_num = get_alerts_number("agent.cfg");
@@ -73,17 +115,116 @@ char* watch_whole_chat(char *buf, int agent)
     /* Check if they are talking about sundro */
     for(i = 0; i < alerts_num; i++) 
     {
-        if(search_str(buf, alerts[i]) > 0) 
+        if(strsrc(buf, alerts[i]) > 0) 
         {
             /* Send sms to owner */
             if (agent) send_sms(buf);
-
-            sprintf(output, "%s", "What did you say? I got you!");
-            return output;
         }
     }
 
     return NULL;
+}
+
+/*
+ * check_valid_command - Function searchs and handles 
+ * commands from private chat and checks key, if 
+ * key is valid, function makes the response.
+ */
+char *check_valid_command(char *buf) 
+{
+    static char cmd[128];
+
+    /* Get date */
+    SlogDate date;
+    get_slog_date(&date);
+
+    if (strsrc(buf, "command") > 0) 
+    {
+        slog(0, SLOG_LIVE, "Received command. Checking key...");
+
+        /* Get message */
+        if (sscanf(buf, "%128[^,],", cmd))
+        {
+            /* Get command */
+            int len = strlen(cmd);
+            char *msg = strdup(buf+len+2);
+            slog(2, SLOG_DEBUG, "Parsed message: %s", msg);
+
+            /* Go through */
+            if (sscanf(msg, "%32[^*]*", cmd)) 
+            {
+                char pre_krypt[80];
+                sprintf(pre_krypt, "derp-%s:key-%d.%d.%d.%d.%d", 
+                    cmd, date.year, date.mon, date.day, date.hour, date.min);
+                slog(2, SLOG_DEBUG, "Parsed command: %s", cmd);
+
+                /* Crypt */
+                char *valid_key = strcrypt(pre_krypt);
+                slog(2, SLOG_DEBUG, "Current valid key: %s", valid_key);
+
+                /* Check valid key */
+                if (strsrc(msg, valid_key) > 0)
+                {
+                    slog(0, SLOG_LIVE, "Key is valid.");
+                    slog(0, SLOG_DEBUG, "Command is: %s", cmd);
+                    return cmd;
+                }
+                else 
+                {
+                    slog(0, SLOG_WARN, "Incorrect key..");
+                    strcpy(cmd, "incorrect-key");
+                    return cmd;
+                }
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+/*
+ * handle_commands - Function searchs and handles 
+ * commands from private chat and checks key, if 
+ * key is valid, function makes the response.
+ */
+char *handle_commands(char *buf) 
+{
+    char *cmd = check_valid_command(buf);
+    if (cmd == NULL) return NULL;
+
+    if (strsrc(cmd, "incorrect-key") > 0)
+    {
+        cmd = strdup("Incorrect key bro.. :)");
+        return cmd;
+    }
+
+    if ((strsrc(cmd, "die") > 0) ||
+        (strsrc(cmd, "logout") > 0))
+    {
+        slog(0, SLOG_LIVE, "Received valid exit command, exiting..");
+        kill(getpid(), SIGINT);
+    }
+    else if (strsrc(cmd, "disable-agent") > 0)
+    {
+        msl_logout();
+    } 
+    else if (strsrc(cmd, "silent-mode-on") > 0)
+    {
+        do_response = 0;
+    }
+    else if (strsrc(cmd, "silent-mode-off") > 0)
+    {
+        do_response = 1;
+    }
+    else 
+    {
+        cmd = strdup("I dont know this command bro..");
+        return cmd;
+    }
+
+    cmd = strdup("ok..");
+    return cmd;
 }
 
 
@@ -98,35 +239,58 @@ char* watch_private_chat(char *buf, int agent)
     char *output = watch_whole_chat(buf, agent);
     if (output != NULL) return output;
 
-    /* Blah questions */
-    if (search_str(buf, "who are you") > 0) 
+    /* Handle commands */
+    output = handle_commands(buf);
+    if (output != NULL) return output;
+
+    if (do_response)
     {
-        output = strdup("Im Derpina, Bitch!");
-        return output;
-    }
-    else if (search_str(buf, "who is") > 0)
-    {
-        output = strdup("I dont fucking know, gtfo bitch!");
-        return output;
-    }
-    else if ((search_str(buf, "hey") > 0) 
-        || (search_str(buf, "hello") > 0)) 
-    {
-        output = strdup("Heey!");
-        return output;
-    }
-    else if ((search_str(buf, "whats up") > 0) ||
-        (search_str(buf, "what's up") > 0) ||
-        (search_str(buf, "how are you") > 0) ||
-        (search_str(buf, "whats going") > 0) )
-    {
-        output = strdup("Heh, Just chilling. Yay!");
-        return output;
-    }
-    else 
-    {
-        output = strdup("What? o.O");
-        return output;
+        /* Blah questions */
+        if (strsrc(buf, "who are you") > 0) 
+        {
+            output = strdup("Im Derpina, Bitch!");
+            return output;
+        }
+        else if (strsrc(buf, "who is") > 0)
+        {
+            output = strdup("I dont know...");
+            return output;
+        }
+        else if ((strsrc(buf, "you") > 0) && 
+            (strsrc(buf, "alive") > 0))
+        {
+            output = strdup("I dont know...");
+            return output;
+        }
+        else if ((strsrc(buf, "hey") > 0) 
+            || (strsrc(buf, "hello") > 0)) 
+        {
+            output = strdup("Heey!");
+            return output;
+        }
+        else if ((strsrc(buf, "PING") > 0) 
+            || (strsrc(buf, "ping") > 0)) 
+        {
+            output = strdup("PONG :)");
+            return output;
+        }
+        else if ((strsrc(buf, "whats up") > 0) ||
+            (strsrc(buf, "what's up") > 0) ||
+            (strsrc(buf, "how are you") > 0) ||
+            (strsrc(buf, "whats going") > 0) )
+        {
+            output = strdup("Heh, Just chilling.");
+            return output;
+        }
+        else 
+        {
+            if ((strsrc(buf, "join") <= 0) ||
+                (strsrc(buf, "JOIN") <= 0))
+            {
+                output = strdup("Hm...");
+                return output;
+            }
+        }
     }
 
     return NULL;

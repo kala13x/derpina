@@ -73,9 +73,9 @@ int create_socket(char *addr, char *port)
  */
 int is_connected(char *buf) 
 {
-    if (search_str(buf, "/MOTD") > 0)
+    if (strsrc(buf, "/MOTD") > 0)
         return 1;
-    else if (search_str(buf, "MOTD") > 0)
+    else if (strsrc(buf, "MOTD") > 0)
         return 1;
     else
         return 0;
@@ -188,7 +188,7 @@ void handle_msg(int sock, char *buf, char *usr, char *chan, int agent)
     char *answer;
 
     /* Check if they are talking to us */
-    if(search_str(buf, usr) > 0) 
+    if(strsrc(buf, usr) > 0) 
         answer = watch_private_chat(buf, agent);
     else 
         answer = watch_whole_chat(buf, agent);
@@ -198,7 +198,7 @@ void handle_msg(int sock, char *buf, char *usr, char *chan, int agent)
             send_message(sock, chan, answer);
 
     /* Check if ping request and send pong */
-    if (search_str(buf, "PING") > 0) 
+    if (strsrc(buf, "PING") > 0) 
         send_keepalive(sock, buf);
 }
 
